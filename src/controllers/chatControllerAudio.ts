@@ -6,8 +6,7 @@ import File from "../../models/File";
 import BotChats from "../../models/BotChats";
 import { Translate } from "@google-cloud/translate/build/src/v2";
 const speech = require("@google-cloud/speech");
-const { TextToSpeechClient } = require('@google-cloud/text-to-speech');
-
+const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 if (
@@ -44,7 +43,6 @@ const serviceAccountKey = {
   client_x509_cert_url: process.env.GOOGLE_CLIENT_X509_CERT_URL,
 };
 
-
 // console.log("serviceAccountKey: ", serviceAccountKey);
 
 const clientGoogle = new speech.SpeechClient({
@@ -52,9 +50,8 @@ const clientGoogle = new speech.SpeechClient({
 });
 
 const textToSpeachClient = new TextToSpeechClient({
-    credentials: serviceAccountKey,
-  });
-
+  credentials: serviceAccountKey,
+});
 
 export const chatAudioResponse = async (
   req: RequestWithChatId,
@@ -67,6 +64,11 @@ export const chatAudioResponse = async (
 
   let userChatId = req.body.chatId || "";
   let language = req.body.language;
+  let transcriptQuestion = req.body.transcript;
+  let messages = req.body.chatHistory;
+
+  console.log("Original Chat History:", messages);
+
 
   // console.log(req.body.language)
 
@@ -95,27 +97,30 @@ export const chatAudioResponse = async (
 
     // Get the user question from the chat history
     let userQuestion = "";
-    for (let i = chatHistory.length - 1; i >= 0; i--) {
-      if (chatHistory[i].role === "user") {
-        userQuestion = chatHistory[i].content;
-        break;
-      }
-    }
+    // for (let i = chatHistory.length - 1; i >= 0; i--) {
+    //   if (chatHistory[i].role === "user") {
+    //     userQuestion = chatHistory[i].content;
+    //     break;
+    //   }
+    // }
 
     let translatedQuestion = "";
     // console.log("userQuestion : ", userQuestion)
     if (language == "Sinhala") {
-      translatedQuestion = await translateToEnglish(userQuestion);
+      translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else if (language === "Tamil") {
-      translatedQuestion = await translateToEnglish(userQuestion);
+      translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else {
-      translatedQuestion = userQuestion;
+      translatedQuestion = transcriptQuestion;
     }
 
     // console.log("userQuestion",userQuestion);
-    console.log("translatedQuestion", translatedQuestion);
-    async function translateToEnglish(userQuestion: string) {
-      const [translationsToEng] = await clientGoogle.translate(userQuestion, "en");
+    console.log("translatedQuestion :", translatedQuestion);
+    async function translateToEnglish(transcriptQuestion: string) {
+      const [translationsToEng] = await clientGoogle.translate(
+        transcriptQuestion,
+        "en"
+      );
       const finalQuestion = Array.isArray(translationsToEng)
         ? translationsToEng.join(", ")
         : translationsToEng;
@@ -131,42 +136,37 @@ export const chatAudioResponse = async (
     await BotChats.create({
       message_id: userChatId,
       language: language,
-      message: userQuestion,
+      message: transcriptQuestion,
       message_sent_by: "customer",
       viewed_by_admin: "no",
     });
 
     let kValue = 2;
 
-    //============= change context ======================
     async function handleSearchRequest(
       translatedQuestion: string,
       kValue: number
     ) {
-      // ================================================================
-      // STANDALONE QUESTION GENERATE
-      // ================================================================
+        
+
       const filteredChatHistory = chatHistory.filter(
         (item: { role: string }) => item.role !== "system"
       );
+      console.log("Filtered Chat History:", filteredChatHistory);
 
       const chatHistoryString = JSON.stringify(filteredChatHistory);
 
-      // const questionRephrasePrompt = `As a senior banking assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY, even if it is a question related to the calculation. If the user asks for information like email or address, provide Thyaga email and address.
-      // ----------
-      // CHAT HISTORY: {${chatHistoryString}}
-      // ----------
-      // FOLLOWUP QUESTION: {${translatedQuestion}}
-      // ----------
-      // Standalone question:`
+      console.log("chatHistoryString : ",chatHistoryString)
 
-      const questionRephrasePrompt = `As a customer service assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY.
-----------
-CHAT HISTORY: {${chatHistoryString}}
-----------
-FOLLOWUP QUESTION: {${translatedQuestion}}
-----------
-Standalone question:`;
+    
+
+const questionRephrasePrompt = `As a senior banking assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY, even if it is a question related to the calculation. If the user asks for information like email or address, provide Thyaga email and address.
+      ----------
+      CHAT HISTORY: {${chatHistoryString}}
+      ----------
+      FOLLOWUP QUESTION: {${translatedQuestion}}
+      ----------
+      Standalone question:`
 
       const completionQuestion = await openai.completions.create({
         model: "gpt-3.5-turbo-instruct",
@@ -175,8 +175,6 @@ Standalone question:`;
         temperature: 0,
       });
 
-      // console.log("chatHistory : ", chatHistory);
-      // console.log("Standalone Question PROMPT :", questionRephrasePrompt)
       console.log("Standalone Question :", completionQuestion.choices[0].text);
 
       // =============================================================================
@@ -185,22 +183,15 @@ Standalone question:`;
         model: "text-embedding-ada-002",
         input: completionQuestion.choices[0].text,
       });
-      // console.log(embedding.data[0].embedding);
 
-      // =============================================================================
-      // query from pinecone
-      // console.log('K - ', kValue)
       const queryResponse = await namespace.query({
         vector: embedding.data[0].embedding,
         topK: kValue,
         includeMetadata: true,
       });
-      // console.log("VECTOR RESPONSE : ",queryResponse.matches)
 
-      // =============================================================================
-      // get vector documents into one string
       const results: string[] = [];
-      // console.log("CONTEXT : ", queryResponse.matches[0].metadata);
+
       queryResponse.matches.forEach((match) => {
         if (match.metadata && typeof match.metadata.Title === "string") {
           const result = `Title: ${match.metadata.Title}, \n Content: ${match.metadata.Text} \n \n `;
@@ -208,7 +199,6 @@ Standalone question:`;
         }
       });
       let context = results.join("\n");
-      console.log("CONTEXT : ", context);
 
       // set system prompt
       // =============================================================================
@@ -218,8 +208,7 @@ Standalone question:`;
       chatHistory[0].content = `You are a helpful assistant and you are friendly. if user greet you you will give proper greeting in friendly manner. Your name is Thyaga GPT. Answer user question Only based on given Context: ${context}, your answer must be less than 150 words. If the user asks for information like your email or address, you'll provide Thyaga email and address. If answer has list give it as numberd list. If it has math question relevent to given Context give calculated answer, If user question is not relevent to the Context just say "Sorry, I couldn't find any information on that. Would you like to chat with a live agent?". Do NOT make up any answers and questions not relevant to the context using public information.`;
     }
 
-    // async function processRequest(translatedQuestion: string, userChatId: string) {
-    await handleSearchRequest(translatedQuestion, kValue);
+    await handleSearchRequest(transcriptQuestion, kValue);
 
     // console.log("chatHistory",chatHistory);
     // GPT response ===========================
@@ -251,7 +240,9 @@ Standalone question:`;
       }
     }
 
-    console.log("translatedResponse (SP2TXT) : ", translatedResponse)
+    console.log("translatedResponse (SP2TXT) : ", translatedResponse);
+
+    chatHistory.push({ role: 'assistant', content: translatedResponse });
 
     async function translateToLanguage(botResponse: string) {
       const [translationsToLanguage] = await translate.translate(
@@ -268,27 +259,24 @@ Standalone question:`;
     // add assistant to array
     chatHistory.push({ role: "assistant", content: botResponse });
 
-    // console.log(" send chat id : ", userChatId)
-    // }
-    // await processRequest(translatedQuestion, userChatId);
+    
+
+    const [response] = await textToSpeachClient.synthesizeSpeech({
+      input: { text: translatedResponse },
+      voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
+      audioConfig: { audioEncoding: "MP3" },
+    });
+
+    const audioContent = response.audioContent.toString("base64");
+    const audioSrc = `data:audio/mp3;base64,${audioContent}`;
 
     await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: translatedResponse,
-      message_sent_by: "bot",
-      viewed_by_admin: "no",
-    });
-
-    
-    const [response] = await textToSpeachClient.synthesizeSpeech({
-        input: { text: translatedResponse },
-        voice: { languageCode : "en-US", ssmlGender: 'NEUTRAL' },
-        audioConfig: { audioEncoding: 'MP3' },
-    });
-
-    const audioContent = response.audioContent.toString('base64');
-    const audioSrc = `data:audio/mp3;base64,${audioContent}`;
+        message_id: userChatId,
+        language: language,
+        message: translatedResponse,
+        message_sent_by: "bot",
+        viewed_by_admin: "no",
+      });
 
     // console.log("botResponse",botResponse);
     // console.log("translatedResponse",translatedResponse);
@@ -296,7 +284,7 @@ Standalone question:`;
       answer: translatedResponse,
       chatHistory: chatHistory,
       chatId: userChatId,
-      audioSrc: audioSrc
+      audioSrc: audioSrc,
     });
     // }
   } catch (error) {
@@ -371,3 +359,37 @@ Standalone question:`;
 // const prefix = 'chat';
 // userChatId = `${prefix}_${randomString}`;
 // console.log("Generated chat id : ", userChatId);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // const questionRephrasePrompt = `As a senior banking assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY, even if it is a question related to the calculation. If the user asks for information like email or address, provide Thyaga email and address.
+      // ----------
+      // CHAT HISTORY: {${chatHistoryString}}
+      // ----------
+      // FOLLOWUP QUESTION: {${translatedQuestion}}
+      // ----------
+      // Standalone question:`
+
+      
+
+//       const questionRephrasePrompt = `As a customer service assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY.
+// ----------
+// CHAT HISTORY: {${chatHistoryString}}
+// ----------
+// FOLLOWUP QUESTION: {${translatedQuestion}}
+// ----------
+// Standalone question:`;

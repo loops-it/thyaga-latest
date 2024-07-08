@@ -118,7 +118,7 @@ export const chatResponse = async (req: RequestWithChatId, res: Response) => {
             const filteredChatHistory = chatHistory.filter((item: { role: string; }) => item.role !== 'system');
 
             const chatHistoryString = JSON.stringify(filteredChatHistory);
-
+            console.log("chatHistoryString chat : ",chatHistoryString)
 
          
 

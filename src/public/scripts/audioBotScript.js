@@ -896,14 +896,10 @@ document
 
           const transcript = await response.json();
           appendMessageToResponse("user", transcript.text);
+          chatHistory.push({ role: "user", content: transcript.text });
           showTypingAnimation();
 
           let chatId = localStorage.getItem("chatId");
-          const requestBody = {
-            chatId: chatId,
-            messages: chatHistory,
-            language: selectedLanguage || "English",
-          };
 
           const responseAnswer = await fetch("/voice-chat-response", {
             method: "POST",
@@ -925,6 +921,8 @@ document
           }
           if (botAnswer.answer !== null) {
             appendMessageToResponse("bot", botAnswer.answer, botAnswer);
+            // chatHistory = data.chatHistory || [];
+            
             if (botAnswer.audioSrc) {
               const audio = new Audio(botAnswer.audioSrc);
               audio.play();
