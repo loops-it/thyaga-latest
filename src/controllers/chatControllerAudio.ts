@@ -254,7 +254,6 @@ const questionRephrasePrompt = `As a senior banking assistant, kindly assess whe
         : translationsToLanguage;
       return finalAnswer;
     }
-    // console.log("GPT : ", translatedResponse);
 
     // add assistant to array
     chatHistory.push({ role: "assistant", content: botResponse });
