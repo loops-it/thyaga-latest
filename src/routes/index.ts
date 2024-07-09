@@ -22,5 +22,9 @@ router.get('/live-agent', (req: Request, res: Response) => {
     res.render('liveAgent');
 });
 
+router.get('/voice-and-chat-bot', async (req: Request, res: Response) => {
+    const questions  = await QuickQuestion.findAll({});
+    res.render('VoiceBotIntergration',{questions: questions});
+});
 
 export default router;
