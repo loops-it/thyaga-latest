@@ -894,7 +894,14 @@ function stopRecording() {
 // Event listeners for the recording button
 document.getElementById("startRecording").addEventListener("mousedown", startRecording);
 document.getElementById("startRecording").addEventListener("mouseup", stopRecording);
-
+document.getElementById("startRecording").addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  startRecording();
+});
+document.getElementById("startRecording").addEventListener("touchend", (e) => {
+  e.preventDefault();
+  stopRecording();
+});
 
 
 // Event listener for language change to English
