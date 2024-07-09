@@ -103,6 +103,7 @@ export const chatAudioResponse = async (
     if (language == "sinhala") {
       languageCode = "si-LK";
       // voiceName = "si-LK-Standard-A";
+      // languageCode = "ta-IN";
       voiceName = "ta-IN-Standard-C";
       translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else if (language === "tamil") {
