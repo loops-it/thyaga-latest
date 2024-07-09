@@ -61,57 +61,62 @@ export const chatTranscribeAudio = async (
   //thyaga-data
 
   let userChatId = req.body.chatId || "";
+  let language = req.body.language;
 
   // console.log(req.body.language)
-    // chat id
-    if (!userChatId) {
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = ("0" + (currentDate.getMonth() + 1)).slice(-2);
-      const day = ("0" + currentDate.getDate()).slice(-2);
-      const hours = ("0" + currentDate.getHours()).slice(-2);
-      const minutes = ("0" + currentDate.getMinutes()).slice(-2);
-      const seconds = ("0" + currentDate.getSeconds()).slice(-2);
+  // chat id
+  if (!userChatId) {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = ("0" + (currentDate.getMonth() + 1)).slice(-2);
+    const day = ("0" + currentDate.getDate()).slice(-2);
+    const hours = ("0" + currentDate.getHours()).slice(-2);
+    const minutes = ("0" + currentDate.getMinutes()).slice(-2);
+    const seconds = ("0" + currentDate.getSeconds()).slice(-2);
 
-      const prefix = "chat";
-      userChatId = `${prefix}_${year}${month}${day}_${hours}${minutes}${seconds}`;
+    const prefix = "chat";
+    userChatId = `${prefix}_${year}${month}${day}_${hours}${minutes}${seconds}`;
+  }
 
-      // console.log("Generated chat id : ", userChatId);
-    } 
 
-    const {  messages, chatId } = req.body;
+  let languageCode = "en-US"; 
+  if (language === "sinhala") {
+    languageCode = "si-LK";
+  } else if (language === "tamil") {
+    languageCode = "ta-IN";
+  }
 
-    if (!req.file) {
-      return res.status(400).send("No audio file uploaded.");
-    }
+  if (!req.file) {
+    return res.status(400).send("No audio file uploaded.");
+  }
 
-    const audioBuffer = req.file.buffer;
+  const audioBuffer = req.file.buffer;
 
-    console.log("audioBuffer : ", audioBuffer);
+  console.log("audioBuffer : ", audioBuffer);
 
-    const request = {
-      audio: {
-        content: audioBuffer.toString("base64"),
-      },
-      config: {
-        encoding: "MP3",
-        sampleRateHertz: 16000,
-        languageCode: "en-US",
-      },
-    };
+  const request = {
+    audio: {
+      content: audioBuffer.toString("base64"),
+    },
+    config: {
+      encoding: "MP3",
+      sampleRateHertz: 16000,
+      languageCode: languageCode,
+    },
+  };
 
-    try {
-      const [response] = await clientGoogle.recognize(request);
-      const transcription = response.results
-        .map(
-          (result: { alternatives: { transcript: any }[] }) =>
-            result.alternatives[0].transcript
-        )
-        .join("\n");
-      console.log(`Transcription (Google Cloud): ${transcription}`);
-      res.json({ text: transcription });
-    } catch (error) {
-      console.error("ERROR:", error);
-      res.status(500).send("Error during transcription");
-    }
+  try {
+    const [response] = await clientGoogle.recognize(request);
+    const transcription = response.results
+      .map(
+        (result: { alternatives: { transcript: any }[] }) =>
+          result.alternatives[0].transcript
+      )
+      .join("\n");
+    console.log(`Transcription (Google Cloud): ${transcription}`);
+    res.json({ text: transcription });
+  } catch (error) {
+    console.error("ERROR:", error);
+    res.status(500).send("Error during transcription");
+  }
 };

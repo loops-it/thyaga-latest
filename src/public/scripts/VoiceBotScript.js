@@ -699,8 +699,22 @@ async function startRecording() {
       const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
       audioChunks = [];
 
-      const formData = new FormData();
+      
+
+      const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
+
+        let selectedLanguage;
+        if (selectedLanguageLocal === "singlish") {
+          selectedLanguage = "sinhala";
+        } else if (selectedLanguageLocal === "tanglish") {
+          selectedLanguage = "tamil";
+        } else {
+          selectedLanguage = selectedLanguageLocal;
+        }
+
+        const formData = new FormData();
       formData.append("audio", audioBlob);
+      formData.append("language", selectedLanguage);
 
       try {
         const response = await fetch("/recording-start", {
@@ -714,16 +728,7 @@ async function startRecording() {
         showTypingAnimation();
 
         let chatId = localStorage.getItem("chatId");
-        const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
-
-        let selectedLanguage;
-        if (selectedLanguageLocal === "singlish") {
-          selectedLanguage = "sinhala";
-        } else if (selectedLanguageLocal === "tanglish") {
-          selectedLanguage = "tamil";
-        } else {
-          selectedLanguage = selectedLanguageLocal;
-        }
+        
 
         const responseAnswer = await fetch("/voice-chat-response", {
           method: "POST",

@@ -5,7 +5,7 @@ import { Request as ExpressRequest, Response } from "express";
 import File from "../../models/File";
 import BotChats from "../../models/BotChats";
 import { Translate } from "@google-cloud/translate/build/src/v2";
-const speech = require("@google-cloud/speech");
+// const speech = require("@google-cloud/speech");
 const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -45,9 +45,9 @@ const serviceAccountKey = {
 
 // console.log("serviceAccountKey: ", serviceAccountKey);
 
-const clientGoogle = new speech.SpeechClient({
-  credentials: serviceAccountKey,
-});
+// const clientGoogle = new speech.SpeechClient({
+//   credentials: serviceAccountKey,
+// });
 
 const textToSpeachClient = new TextToSpeechClient({
   credentials: serviceAccountKey,
@@ -68,7 +68,6 @@ export const chatAudioResponse = async (
   let messages = req.body.chatHistory;
 
   console.log("Original Chat History:", messages);
-
 
   // console.log(req.body.language)
 
@@ -95,29 +94,30 @@ export const chatAudioResponse = async (
     // get user message with history
     let chatHistory = req.body.messages || [];
 
-    // Get the user question from the chat history
     let userQuestion = "";
-    // for (let i = chatHistory.length - 1; i >= 0; i--) {
-    //   if (chatHistory[i].role === "user") {
-    //     userQuestion = chatHistory[i].content;
-    //     break;
-    //   }
-    // }
 
     let translatedQuestion = "";
+    let languageCode = "en-US";
+    let voiceName = "en-US-Wavenet-D";
     // console.log("userQuestion : ", userQuestion)
     if (language == "sinhala") {
+      languageCode = "si-LK";
+      voiceName = "si-LK-Standard-A";
       translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else if (language === "tamil") {
+      languageCode = "ta-IN";
+      voiceName = "ta-IN-Standard-C";
       translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else {
+      languageCode = "en-US";
+      voiceName = "en-US-Wavenet-D";
       translatedQuestion = transcriptQuestion;
     }
 
     // console.log("userQuestion",userQuestion);
-    console.log("translatedQuestion :", translatedQuestion);
+
     async function translateToEnglish(transcriptQuestion: string) {
-      const [translationsToEng] = await clientGoogle.translate(
+      const [translationsToEng] = await translate.translate(
         transcriptQuestion,
         "en"
       );
@@ -147,8 +147,6 @@ export const chatAudioResponse = async (
       translatedQuestion: string,
       kValue: number
     ) {
-        
-
       const filteredChatHistory = chatHistory.filter(
         (item: { role: string }) => item.role !== "system"
       );
@@ -156,17 +154,17 @@ export const chatAudioResponse = async (
 
       const chatHistoryString = JSON.stringify(filteredChatHistory);
 
-      console.log("chatHistoryString : ",chatHistoryString)
+      console.log("chatHistoryString : ", chatHistoryString);
 
-    
+      console.log(`translated to ${language}  Question : ${translatedQuestion}`);
 
-const questionRephrasePrompt = `As a senior banking assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY, even if it is a question related to the calculation. If the user asks for information like email or address, provide Thyaga email and address.
+      const questionRephrasePrompt = `As a senior banking assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY, even if it is a question related to the calculation. If the user asks for information like email or address, provide Thyaga email and address.
       ----------
       CHAT HISTORY: {${chatHistoryString}}
       ----------
       FOLLOWUP QUESTION: {${translatedQuestion}}
       ----------
-      Standalone question:`
+      Standalone question:`;
 
       const completionQuestion = await openai.completions.create({
         model: "gpt-3.5-turbo-instruct",
@@ -242,7 +240,7 @@ const questionRephrasePrompt = `As a senior banking assistant, kindly assess whe
 
     console.log("translatedResponse (SP2TXT) : ", translatedResponse);
 
-    chatHistory.push({ role: 'assistant', content: translatedResponse });
+    chatHistory.push({ role: "assistant", content: translatedResponse });
 
     async function translateToLanguage(botResponse: string) {
       const [translationsToLanguage] = await translate.translate(
@@ -258,11 +256,9 @@ const questionRephrasePrompt = `As a senior banking assistant, kindly assess whe
     // add assistant to array
     chatHistory.push({ role: "assistant", content: botResponse });
 
-    
-
     const [response] = await textToSpeachClient.synthesizeSpeech({
       input: { text: translatedResponse },
-      voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
+      voice: { languageCode: languageCode, name: voiceName, ssmlGender: "NEUTRAL" },
       audioConfig: { audioEncoding: "MP3" },
     });
 
@@ -270,12 +266,12 @@ const questionRephrasePrompt = `As a senior banking assistant, kindly assess whe
     const audioSrc = `data:audio/mp3;base64,${audioContent}`;
 
     await BotChats.create({
-        message_id: userChatId,
-        language: language,
-        message: translatedResponse,
-        message_sent_by: "bot",
-        viewed_by_admin: "no",
-      });
+      message_id: userChatId,
+      language: language,
+      message: translatedResponse,
+      message_sent_by: "bot",
+      viewed_by_admin: "no",
+    });
 
     // console.log("botResponse",botResponse);
     // console.log("translatedResponse",translatedResponse);
@@ -359,31 +355,13 @@ const questionRephrasePrompt = `As a senior banking assistant, kindly assess whe
 // userChatId = `${prefix}_${randomString}`;
 // console.log("Generated chat id : ", userChatId);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // const questionRephrasePrompt = `As a senior banking assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY, even if it is a question related to the calculation. If the user asks for information like email or address, provide Thyaga email and address.
-      // ----------
-      // CHAT HISTORY: {${chatHistoryString}}
-      // ----------
-      // FOLLOWUP QUESTION: {${translatedQuestion}}
-      // ----------
-      // Standalone question:`
-
-      
+// const questionRephrasePrompt = `As a senior banking assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY, even if it is a question related to the calculation. If the user asks for information like email or address, provide Thyaga email and address.
+// ----------
+// CHAT HISTORY: {${chatHistoryString}}
+// ----------
+// FOLLOWUP QUESTION: {${translatedQuestion}}
+// ----------
+// Standalone question:`
 
 //       const questionRephrasePrompt = `As a customer service assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevent keywords from the CHAT HISTORY.
 // ----------
