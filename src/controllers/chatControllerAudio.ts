@@ -97,8 +97,8 @@ export const chatAudioResponse = async (
     let userQuestion = "";
 
     let translatedQuestion = "";
-    let languageCode = "en-US";
-    let voiceName = "en-US-Wavenet-D";
+    let languageCode = "en-GB";
+    let voiceName = "en-GB-Standard-A";
     // console.log("userQuestion : ", userQuestion)
     if (language == "sinhala") {
       languageCode = "si-LK";
@@ -111,8 +111,8 @@ export const chatAudioResponse = async (
       voiceName = "ta-IN-Standard-C";
       translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else {
-      languageCode = "en-US";
-      voiceName = "en-US-Wavenet-D";
+      languageCode = "en-GB";
+      voiceName = "en-GB-Standard-A";
       translatedQuestion = transcriptQuestion;
     }
 
