@@ -702,253 +702,200 @@ function appendLanguageMessage(content) {
   responseDiv.scrollTop = responseDiv.scrollHeight;
 }
 
-// Event listener for question form submission
+// audio bot intergration
+// let mediaRecorder;
+// let audioChunks = [];
+
+// function toggleButtons(startVisible, stopVisible) {
+//   document.getElementById("startRecording").style.display = startVisible
+//     ? "block"
+//     : "none";
+//   document.getElementById("stopRecording").style.display = stopVisible
+//     ? "block"
+//     : "none";
+// }
+
 // document
-//   .getElementById("questionForm")
-//   .addEventListener("submit", async function (event) {
-//     event.preventDefault();
-//     const questionInput = document.getElementById("question");
-//     const question = questionInput.value;
+//   .getElementById("startRecording")
+//   .addEventListener("click", async () => {
+//     try {
+//       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+//       mediaRecorder = new MediaRecorder(stream);
 
-//     document.getElementById("question").value = "";
+//       mediaRecorder.ondataavailable = (event) => {
+//         audioChunks.push(event.data);
+//       };
 
-//     const selectedLanguage = localStorage.getItem("selectedLanguage");
-//     chatHistory.push({ role: "user", content: question });
+//       const selectedLanguage = localStorage.getItem("selectedLanguage");
+//       let chatId = localStorage.getItem("chatId");
+//       console.log("generated chat id : ", chatId);
 
-//     appendMessageToResponse("user", question);
+//       const requestBody = {
+//         chatId: chatId,
+//         messages: chatHistory,
+//         language: selectedLanguage || "English",
+//       };
 
-//     let chatId = localStorage.getItem("chatId");
-//     console.log("generated chat id : ", chatId);
-//     const requestBody = {
-//       chatId: chatId,
-//       messages: chatHistory,
-//       language: selectedLanguage || "English",
-//     };
-//     const requestBodyAgent = {
-//       chatId: chatId,
-//       user_message: question,
-//       language: selectedLanguage || "English",
-//     };
+//       console.log("requestBody:", requestBody);
 
-//     console.log("requestBody : ", requestBody);
+//       mediaRecorder.onstop = async () => {
+//         const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+//         audioChunks = [];
 
-//     if (chatWithAgent === false) {
-//       // Display the user's message immediately
-//       // Change button icon to three dots
-//       const submitButton = document.querySelector(".chat-submit-button");
-//       submitButton.innerHTML = '<i class="bi bi-three-dots loading"></i>';
-//       submitButton.disabled = true;
+//         const formData = new FormData();
+//         formData.append("audio", audioBlob);
 
-//       // Disable input field
-//       questionInput.disabled = true;
-//       // Show typing animation
-//       showTypingAnimation();
-
-//       const currentTime = new Date();
-//       let hours = currentTime.getHours();
-//       const minutes = currentTime.getMinutes().toString().padStart(2, "0");
-//       const seconds = currentTime.getSeconds().toString().padStart(2, "0");
-//       const ampm = hours >= 12 ? "PM" : "AM";
-//       hours = hours % 12;
-//       hours = hours ? hours : 12;
-//       const formattedTime = `${hours
-//         .toString()
-//         .padStart(2, "0")}:${minutes} ${ampm}`;
-
-//       try {
-//         console.log("running ...123");
-//         let mediaRecorder;
-//         let audioChunks = [];
-
-//         document
-//           .getElementById("startRecording")
-//           .addEventListener("click", async () => {
-//             const stream = await navigator.mediaDevices.getUserMedia({
-//               audio: true,
-//             });
-//             mediaRecorder = new MediaRecorder(stream);
-
-//             mediaRecorder.ondataavailable = (event) => {
-//               audioChunks.push(event.data);
-//             };
-
-//             mediaRecorder.onstop = async () => {
-//               const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-//               audioChunks = [];
-
-//               const formData = new FormData();
-//               formData.append("audio", audioBlob);
-//               formData.append("chatId", chatId);
-//               formData.append("messages", chatHistory);
-//               formData.append("language", selectedLanguage || "English");
-
-//               const response = await fetch("/recording-start", {
-//                 method: "POST",
-//                 body: formData,
-//               });
-
-//               const transcript = await response.json();
-//               appendMessageToResponse("user", transcript);
-//             };
-
-//             mediaRecorder.start();
+//         try {
+//           const response = await fetch("/recording-start", {
+//             method: "POST",
+//             body: formData,
 //           });
 
-//         document
-//           .getElementById("stopRecording")
-//           .addEventListener("click", () => {
-//             mediaRecorder.stop();
+//           const transcript = await response.json();
+//           appendMessageToResponse("user", transcript.text);
+//           chatHistory.push({ role: "user", content: transcript.text });
+//           showTypingAnimation();
+
+//           let chatId = localStorage.getItem("chatId");
+
+//           const responseAnswer = await fetch("/voice-chat-response", {
+//             method: "POST",
+//             headers: {
+//               "Content-Type": "application/json",
+//             },
+//             body: JSON.stringify({
+//               transcript: transcript.text,
+//               chatId: chatId,
+//               messages: chatHistory,
+//               language: selectedLanguage || "English",
+//             }),
 //           });
-//         appendMessageToResponse("user", transcript);
 
-//         const data = await response.json();
+//           const botAnswer = await responseAnswer.json();
 
-//         // Update the chat history for future interactions
-//         chatHistory = data.chatHistory || [];
-//         console.log("chatId : ", data.chatId);
-
-//         if (!localStorage.getItem("chatId")) {
-//           localStorage.setItem("chatId", data.chatId);
+//           if (!localStorage.getItem("chatId")) {
+//             localStorage.setItem("chatId", botAnswer.chatId);
+//           }
+//           if (botAnswer.answer !== null) {
+//             appendMessageToResponse("bot", botAnswer.answer, botAnswer);
+            
+//             if (botAnswer.audioSrc) {
+//               const audio = new Audio(botAnswer.audioSrc);
+//               audio.play();
+//           }
+//           }
+//           console.log("botAnswer : ", botAnswer);
+//           hideTypingAnimation();
+//         } catch (error) {
+//           console.error("Error fetching transcript:", error);
 //         }
-//         if (data.answer !== null) {
-//           appendMessageToResponse("bot", data.answer, data);
-//         }
+//       };
 
-//         // Hide typing animation
-//         hideTypingAnimation();
-//         // Clear the question input
-//         questionInput.value = "";
-//         submitButton.innerHTML = '<i class="bi bi-mic-fill"></i>';
-//         //<i class="bi bi-mic-mute-fill"></i>
-//         submitButton.disabled = false;
-//       } catch (error) {
-//         console.error("Error submitting question:", error);
-//         // Handle specific error message
-//         handleErrorMessage(error);
-//       } finally {
-//         // Enable input field
-//         questionInput.disabled = false;
-//       }
-//     } else {
-//       const responseLiveAgent = await fetch("/live-chat-user", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(requestBodyAgent),
-//       });
-
-//       const liveAgentData = await responseLiveAgent.json();
-//       chatHistory = liveAgentData.chatHistory || [];
-//       questionInput.value = "";
+//       mediaRecorder.start();
+//       toggleButtons(false, true);
+//     } catch (error) {
+//       console.error("Error accessing microphone:", error);
 //     }
 //   });
+
+// document.getElementById("stopRecording").addEventListener("click", () => {
+//   if (mediaRecorder && mediaRecorder.state !== "inactive") {
+//     mediaRecorder.stop();
+//     toggleButtons(true, false); 
+//   }
+// });
 
 let mediaRecorder;
 let audioChunks = [];
 
-// Function to toggle button visibility
-function toggleButtons(startVisible, stopVisible) {
-  document.getElementById("startRecording").style.display = startVisible
-    ? "block"
-    : "none";
-  document.getElementById("stopRecording").style.display = stopVisible
-    ? "block"
-    : "none";
+// Function to handle starting the recording
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      audioChunks = [];
+
+      const formData = new FormData();
+      formData.append("audio", audioBlob);
+
+      try {
+        const response = await fetch("/recording-start", {
+          method: "POST",
+          body: formData,
+        });
+
+        const transcript = await response.json();
+        appendMessageToResponse("user", transcript.text);
+        chatHistory.push({ role: "user", content: transcript.text });
+        showTypingAnimation();
+
+        let chatId = localStorage.getItem("chatId");
+        const selectedLanguage = localStorage.getItem("selectedLanguage");
+
+        const responseAnswer = await fetch("/voice-chat-response", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            transcript: transcript.text,
+            chatId: chatId,
+            messages: chatHistory,
+            language: selectedLanguage || "English",
+          }),
+        });
+
+        const botAnswer = await responseAnswer.json();
+
+        if (!localStorage.getItem("chatId")) {
+          localStorage.setItem("chatId", botAnswer.chatId);
+        }
+        if (botAnswer.answer !== null) {
+          appendMessageToResponse("bot", botAnswer.answer, botAnswer);
+
+          if (botAnswer.audioSrc) {
+            const audio = new Audio(botAnswer.audioSrc);
+            audio.play();
+          }
+        }
+        console.log("botAnswer : ", botAnswer);
+        hideTypingAnimation();
+      } catch (error) {
+        console.error("Error fetching transcript:", error);
+      }
+    };
+
+    mediaRecorder.start();
+    // Change the icon to indicate recording
+    document.getElementById("startRecordingIcon").classList.remove("bi-mic-fill");
+    document.getElementById("startRecordingIcon").classList.add("bi-mic-mute-fill");
+  } catch (error) {
+    console.error("Error accessing microphone:", error);
+  }
 }
 
-// Event listener for Start Recording button
-document
-  .getElementById("startRecording")
-  .addEventListener("click", async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
-      };
-
-      const selectedLanguage = localStorage.getItem("selectedLanguage");
-      let chatId = localStorage.getItem("chatId");
-      console.log("generated chat id : ", chatId);
-
-      const requestBody = {
-        chatId: chatId,
-        messages: chatHistory,
-        language: selectedLanguage || "English",
-      };
-
-      console.log("requestBody:", requestBody);
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-        audioChunks = [];
-
-        const formData = new FormData();
-        formData.append("audio", audioBlob);
-
-        try {
-          const response = await fetch("/recording-start", {
-            method: "POST",
-            body: formData,
-          });
-
-          const transcript = await response.json();
-          appendMessageToResponse("user", transcript.text);
-          chatHistory.push({ role: "user", content: transcript.text });
-          showTypingAnimation();
-
-          let chatId = localStorage.getItem("chatId");
-
-          const responseAnswer = await fetch("/voice-chat-response", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              transcript: transcript.text,
-              chatId: chatId,
-              messages: chatHistory,
-              language: selectedLanguage || "English",
-            }),
-          });
-
-          const botAnswer = await responseAnswer.json();
-
-          if (!localStorage.getItem("chatId")) {
-            localStorage.setItem("chatId", botAnswer.chatId);
-          }
-          if (botAnswer.answer !== null) {
-            appendMessageToResponse("bot", botAnswer.answer, botAnswer);
-            // chatHistory = data.chatHistory || [];
-            
-            if (botAnswer.audioSrc) {
-              const audio = new Audio(botAnswer.audioSrc);
-              audio.play();
-          }
-          }
-          console.log("botAnswer : ", botAnswer);
-          hideTypingAnimation();
-        } catch (error) {
-          console.error("Error fetching transcript:", error);
-        }
-      };
-
-      mediaRecorder.start();
-      toggleButtons(false, true);
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
-    }
-  });
-
-// Event listener for Stop Recording button
-document.getElementById("stopRecording").addEventListener("click", () => {
+// Function to handle stopping the recording
+function stopRecording() {
   if (mediaRecorder && mediaRecorder.state !== "inactive") {
     mediaRecorder.stop();
-    toggleButtons(true, false); // Show Start Recording button, hide Stop Recording button
+    // Revert the icon back to the original state
+    document.getElementById("startRecordingIcon").classList.remove("bi-mic-mute-fill");
+    document.getElementById("startRecordingIcon").classList.add("bi-mic-fill");
   }
-});
+}
+
+// Event listeners for the recording button
+document.getElementById("startRecording").addEventListener("mousedown", startRecording);
+document.getElementById("startRecording").addEventListener("mouseup", stopRecording);
+
+
 
 // Event listener for language change to English
 document
