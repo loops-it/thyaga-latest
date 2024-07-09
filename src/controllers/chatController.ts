@@ -32,7 +32,7 @@ export const chatResponse = async (req: RequestWithChatId, res: Response) => {
     let userChatId = req.body.chatId || "";
     let language = req.body.language;
 
-    // console.log(req.body.language)
+    console.log(req.body.language)
 
     try {
 
@@ -73,10 +73,10 @@ export const chatResponse = async (req: RequestWithChatId, res: Response) => {
         
         let translatedQuestion = "";
         // console.log("userQuestion : ", userQuestion)
-        if (language == 'Sinhala') {
+        if (language == 'sinhala') {
             translatedQuestion = await translateToEnglish(userQuestion);
         }
-        else if (language === 'Tamil') {
+        else if (language === 'tamil') {
             translatedQuestion = await translateToEnglish(userQuestion);
         }
         else {
@@ -220,13 +220,13 @@ Standalone question:`
         let selectedLanguage = 'en';
         let translatedResponse = "";
         // console.log("userQuestion : ", userQuestion)
-        if (language == 'Sinhala') {
+        if (language == 'sinhala') {
             selectedLanguage = 'si';
             if (botResponse !== null) {
                 translatedResponse = await translateToLanguage(botResponse);
             }
         }
-        else if (language === 'Tamil') {
+        else if (language === 'tamil') {
             selectedLanguage = 'ta';
             if (botResponse !== null) {
                 translatedResponse = await translateToLanguage(botResponse);

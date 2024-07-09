@@ -106,9 +106,9 @@ export const chatAudioResponse = async (
 
     let translatedQuestion = "";
     // console.log("userQuestion : ", userQuestion)
-    if (language == "Sinhala") {
+    if (language == "sinhala") {
       translatedQuestion = await translateToEnglish(transcriptQuestion);
-    } else if (language === "Tamil") {
+    } else if (language === "tamil") {
       translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else {
       translatedQuestion = transcriptQuestion;
@@ -223,12 +223,12 @@ const questionRephrasePrompt = `As a senior banking assistant, kindly assess whe
     let selectedLanguage = "en";
     let translatedResponse = "";
     // console.log("userQuestion : ", userQuestion)
-    if (language == "Sinhala") {
+    if (language == "sinhala") {
       selectedLanguage = "si";
       if (botResponse !== null) {
         translatedResponse = await translateToLanguage(botResponse);
       }
-    } else if (language === "Tamil") {
+    } else if (language === "tamil") {
       selectedLanguage = "ta";
       if (botResponse !== null) {
         translatedResponse = await translateToLanguage(botResponse);

@@ -9,8 +9,7 @@ let intervalId;
 let agentJoined = false;
 let chatStatus = "bot";
 
-
-// show opening time function 
+// show opening time function
 function setFormattedOpenedTime() {
   const OpenedTime = new Date();
   let Opendhours = OpenedTime.getHours();
@@ -40,15 +39,11 @@ formattedTime = `${hours.toString().padStart(2, "0")}:${minutes} ${ampm}`;
 // Call function to set the time
 setFormattedOpenedTime();
 
-
-
 // Event listener - clear localStorage items on browser refresh
 window.addEventListener("beforeunload", function (event) {
   localStorage.removeItem("selectedLanguage");
   localStorage.removeItem("chatId");
 });
-
-
 
 // Function - show typing animation
 function showTypingAnimation() {
@@ -63,7 +58,6 @@ function showTypingAnimation() {
   responseDiv.appendChild(typingMessage);
   responseDiv.scrollTop = responseDiv.scrollHeight;
 }
-
 
 // Function - hide typing animation
 function hideTypingAnimation() {
@@ -99,10 +93,10 @@ function resetChatTimeout() {
   startChatTimeout();
 }
 
-// Alert - handle chat end 
+// Alert - handle chat end
 function showEndChatAlert() {
   if (!endChatAlertShown) {
-    endChatAlertShown = true; 
+    endChatAlertShown = true;
 
     const responseDiv = document.getElementById("response");
     const alertDiv = document.createElement("div");
@@ -129,7 +123,7 @@ function showEndChatAlert() {
 // Alert - handle chat end for live agent
 function showEndChatAlertAgent() {
   if (!endChatAlertShown) {
-    endChatAlertShown = true; 
+    endChatAlertShown = true;
 
     const responseDiv = document.getElementById("response");
     const alertDiv = document.createElement("div");
@@ -156,7 +150,7 @@ function showEndChatAlertAgent() {
 // Alert - handle chat end for chat bot
 function showEndChatAlertBot() {
   if (!endChatAlertShown) {
-    endChatAlertShown = true; 
+    endChatAlertShown = true;
 
     const responseDiv = document.getElementById("response");
     const alertDiv = document.createElement("div");
@@ -416,7 +410,7 @@ function startCheckingForAgent(data) {
             if (!agentJoined) {
               showAlert(
                 "Now you are chatting with agent ID: " +
-                  dataLiveAgent.agent_name
+                dataLiveAgent.agent_name
               );
               agentJoined = true;
               chatWithAgent = true;
@@ -590,30 +584,42 @@ function appendLanguageMessage(content) {
 }
 
 // Event listener - question form submission
-  // Event listener - question form submission
-  document.getElementById("questionForm").addEventListener("submit", async function (event) {
+// Event listener - question form submission
+document
+  .getElementById("questionForm")
+  .addEventListener("submit", async function (event) {
     event.preventDefault();
     const questionInput = document.getElementById("question");
     const question = questionInput.value;
 
-    // Clear the input
-    questionInput.value = "";
 
-    const selectedLanguage = localStorage.getItem("selectedLanguage");
+
+    const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
     chatHistory.push({ role: "user", content: question });
 
     appendMessageToResponse("user", question);
+
+    let selectedLanguage;
+    if (selectedLanguageLocal === "singlish") {
+      selectedLanguage = "sinhala";
+    } else if (selectedLanguageLocal === "tanglish") {
+      selectedLanguage = "tamil";
+    } else {
+      selectedLanguage = selectedLanguageLocal;
+    }
+
+    console.log("selected Language:", selectedLanguage);
 
     let chatId = localStorage.getItem("chatId");
     const requestBody = {
       chatId: chatId,
       messages: chatHistory,
-      language: selectedLanguage || "English",
+      language: selectedLanguage || "english",
     };
     const requestBodyAgent = {
       chatId: chatId,
       user_message: question,
-      language: selectedLanguage || "English",
+      language: selectedLanguage || "english",
     };
 
     if (chatWithAgent === false) {
@@ -646,6 +652,8 @@ function appendLanguageMessage(content) {
           appendMessageToResponse("bot", data.answer, data);
         }
 
+        // Clear the input
+        questionInput.value = "";
         // Show record button
         document.getElementById("startRecording").style.display = "block";
         document.getElementById("questionForm").style.width = "85%";
@@ -673,143 +681,195 @@ function appendLanguageMessage(content) {
     }
   });
 
-  // Audio recording function
-  let mediaRecorder;
-  let audioChunks = [];
+// Audio recording function
+let mediaRecorder;
+let audioChunks = [];
 
-  // Function to handle starting the recording
-  async function startRecording() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
+// Function to handle starting the recording
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
 
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
-      };
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunks.push(event.data);
+    };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-        audioChunks = [];
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      audioChunks = [];
 
-        const formData = new FormData();
-        formData.append("audio", audioBlob);
+      const formData = new FormData();
+      formData.append("audio", audioBlob);
 
-        try {
-          const response = await fetch("/recording-start", {
-            method: "POST",
-            body: formData,
-          });
+      try {
+        const response = await fetch("/recording-start", {
+          method: "POST",
+          body: formData,
+        });
 
-          const transcript = await response.json();
-          appendMessageToResponse("user", transcript.text);
-          chatHistory.push({ role: "user", content: transcript.text });
-          showTypingAnimation();
+        const transcript = await response.json();
+        appendMessageToResponse("user", transcript.text);
+        chatHistory.push({ role: "user", content: transcript.text });
+        showTypingAnimation();
 
-          let chatId = localStorage.getItem("chatId");
-          const selectedLanguage = localStorage.getItem("selectedLanguage");
+        let chatId = localStorage.getItem("chatId");
+        const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
 
-          const responseAnswer = await fetch("/voice-chat-response", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              transcript: transcript.text,
-              chatId: chatId,
-              messages: chatHistory,
-              language: selectedLanguage || "English",
-            }),
-          });
-
-          const botAnswer = await responseAnswer.json();
-
-          if (!localStorage.getItem("chatId")) {
-            localStorage.setItem("chatId", botAnswer.chatId);
-          }
-          if (botAnswer.answer !== null) {
-            appendMessageToResponse("bot", botAnswer.answer, botAnswer);
-
-            if (botAnswer.audioSrc) {
-              const audio = new Audio(botAnswer.audioSrc);
-              audio.play();
-            }
-          }
-          hideTypingAnimation();
-        } catch (error) {
-          console.error("Error fetching transcript:", error);
-        } finally {
-          // Show input and send button after sending the recording
-          document.getElementById("question").style.display = "block";
-          document.querySelector(".chat-submit-button").style.display = "block";
-          document.getElementById("startRecording").style.display = "block";
+        let selectedLanguage;
+        if (selectedLanguageLocal === "singlish") {
+          selectedLanguage = "sinhala";
+        } else if (selectedLanguageLocal === "tanglish") {
+          selectedLanguage = "tamil";
+        } else {
+          selectedLanguage = selectedLanguageLocal;
         }
-      };
 
-      mediaRecorder.start();
-      // Change the icon to indicate recording
-      document.getElementById("startRecordingIcon").classList.remove("bi-mic-fill");
-      document.getElementById("startRecordingIcon").classList.add("bi-mic-mute-fill");
-      // Hide input and send button when recording starts
-      document.getElementById("question").style.display = "none";
-      document.querySelector(".chat-submit-button").style.display = "none";
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
-    }
+        const responseAnswer = await fetch("/voice-chat-response", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            transcript: transcript.text,
+            chatId: chatId,
+            messages: chatHistory,
+            language: selectedLanguage || "english",
+          }),
+        });
+
+        const botAnswer = await responseAnswer.json();
+
+        if (!localStorage.getItem("chatId")) {
+          localStorage.setItem("chatId", botAnswer.chatId);
+        }
+        if (botAnswer.answer !== null) {
+          appendMessageToResponse("bot", botAnswer.answer, botAnswer);
+
+          if (botAnswer.audioSrc) {
+            const audio = new Audio(botAnswer.audioSrc);
+            audio.play();
+          }
+        }
+        hideTypingAnimation();
+      } catch (error) {
+        console.error("Error fetching transcript:", error);
+      } finally {
+        // Show input and send button after sending the recording
+        document.getElementById("question").style.display = "block";
+        document.querySelector(".chat-submit-button").style.display = "block";
+        document.getElementById("startRecording").style.display = "block";
+      }
+    };
+
+    mediaRecorder.start();
+    // Change the icon to indicate recording
+    document
+      .getElementById("startRecordingIcon")
+      .classList.remove("bi-mic-fill");
+    document
+      .getElementById("startRecordingIcon")
+      .classList.add("bi-mic-mute-fill");
+    // Hide input and send button when recording starts
+    document.getElementById("question").style.display = "none";
+    document.querySelector(".chat-submit-button").style.display = "none";
+  } catch (error) {
+    console.error("Error accessing microphone:", error);
   }
+}
 
-  // Function to handle stopping the recording
-  function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-      mediaRecorder.stop();
-      // Revert the icon back to the original state
-      document.getElementById("startRecordingIcon").classList.remove("bi-mic-mute-fill");
-      document.getElementById("startRecordingIcon").classList.add("bi-mic-fill");
-    }
+// Function to handle stopping the recording
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+    // Revert the icon back to the original state
+    document
+      .getElementById("startRecordingIcon")
+      .classList.remove("bi-mic-mute-fill");
+    document.getElementById("startRecordingIcon").classList.add("bi-mic-fill");
   }
+}
 
-  // Event listeners for the recording button
-  document.getElementById("startRecording").addEventListener("mousedown", startRecording);
-  document.getElementById("startRecording").addEventListener("mouseup", stopRecording);
-  document.getElementById("startRecording").addEventListener("touchstart", (e) => {
+// Event listeners for the recording button
+document
+  .getElementById("startRecording")
+  .addEventListener("mousedown", startRecording);
+document
+  .getElementById("startRecording")
+  .addEventListener("mouseup", stopRecording);
+document
+  .getElementById("startRecording")
+  .addEventListener("touchstart", (e) => {
     e.preventDefault();
     startRecording();
   });
-  document.getElementById("startRecording").addEventListener("touchend", (e) => {
-    e.preventDefault();
-    stopRecording();
-  });
+document.getElementById("startRecording").addEventListener("touchend", (e) => {
+  e.preventDefault();
+  stopRecording();
+});
 
-  document.getElementById("question").addEventListener("input", () => {
-     document.getElementById("startRecording").style.display = "none";
-     document.getElementById("questionForm").style.width = "100%";
-  });
+document.getElementById("question").addEventListener("input", () => {
+  document.getElementById("startRecording").style.display = "none";
+  document.getElementById("questionForm").style.width = "100%";
+});
+document.getElementById("box1").addEventListener("input", () => {
+  document.getElementById("startRecording").style.display = "none";
+  document.getElementById("questionForm").style.width = "100%";
+});
+document.getElementById("box2").addEventListener("input", () => {
+  document.getElementById("startRecording").style.display = "none";
+  document.getElementById("questionForm").style.width = "100%";
+});
 
-
-// Event listener for language change to English
+// Event listener for language change to english
 document
   .getElementById("changeToEnglishButton")
   .addEventListener("click", function () {
-    localStorage.setItem("selectedLanguage", "English");
-    appendLanguageMessage("Please ask your question in English.");
+    document.getElementById("box1").style.display = "none";
+    document.getElementById("box2").style.display = "none";
+    localStorage.setItem("selectedLanguage", "english");
+    appendLanguageMessage("Please ask your question in english.");
   });
 
-// Event listener for language change to Sinhala
+// Event listener for language change to sinhala
 document
   .getElementById("changeToSinhalaButton")
   .addEventListener("click", function () {
-    localStorage.setItem("selectedLanguage", "Sinhala");
+    document.getElementById("box1").style.display = "none";
+    document.getElementById("box2").style.display = "none";
+    localStorage.setItem("selectedLanguage", "sinhala");
     appendLanguageMessage("කරුණාකර ඔබේ ප්‍රශ්නය සිංහලෙන් අසන්න.");
   });
 
-// Event listener for language change to Tamil
+// Event listener for language change to tamil
 document
   .getElementById("changeToTamilButton")
   .addEventListener("click", function () {
-    localStorage.setItem("selectedLanguage", "Tamil");
+    document.getElementById("box1").style.display = "none";
+    document.getElementById("box2").style.display = "none";
+    localStorage.setItem("selectedLanguage", "tamil");
     appendLanguageMessage("உங்கள் கேள்வியை தமிழில் கேளுங்கள்.");
   });
 
+document
+  .getElementById("changeToSinglish")
+  .addEventListener("click", function () {
+    document.getElementById("box1").style.display = "block";
+    document.getElementById("box2").style.display = "none";
+    document.getElementById("question").style.display = "block";
+    localStorage.setItem("selectedLanguage", "singlish");
+    appendLanguageMessage("කරුණාකර ඔබේ ප්‍රශ්නය සිංහලෙන් අසන්න.");
+  });
 
+document
+  .getElementById("changeToTanglish")
+  .addEventListener("click", function () {
+    document.getElementById("box1").style.display = "none";
+    document.getElementById("box2").style.display = "block";
+    document.getElementById("question").style.display = "block";
+    localStorage.setItem("selectedLanguage", "tanglish");
+    appendLanguageMessage("உங்கள் கேள்வியை தமிழில் கேளுங்கள்.");
+  });
 
 // ===============================================
 // ================ rating =======================

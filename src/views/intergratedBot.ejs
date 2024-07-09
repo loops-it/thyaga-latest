@@ -247,7 +247,7 @@
             font-family: "Poppins", sans-serif;
             font-size: 12px;
             border-radius: 15px;
-            background-color: #2a0e45;
+            background-color: #1C73D4;
             border: none;
             color: #fff;
             width: 100%;
@@ -463,11 +463,11 @@
             min-width: 80px;
         }
 
-        .bi-mic-mute-fill{
+        .bi-mic-mute-fill {
             color: red !important;
         }
 
-        #questionForm{
+        #questionForm {
             width: 85%;
         }
     </style>
@@ -502,8 +502,31 @@
                     <div class="messageWrapper">
                         <span class="botname-message" id="OpenedTime1">ChatBot</span>
                         <div>
-                            <p class="mb-0">Hi, How can I help you today!</p>
+                            <p class="mb-2">Hello, Welcome to Thyaga. Please select the language to get started.</p>
+                            <p class="mb-2">ආයුබෝවන්, Thyaga වෙත ඔබව සාදරයෙන් පිළිගනිමු. කරුණාකර ආරම්භ කිරීමට භාෂාව
+                                තෝරන්න.</p>
+                            <p class="mb-0">வணக்கம், Thyaga வரவேற்கிறோம். தொடங்குவதற்கு மொழியைத்
+                                தேர்ந்தெடுக்கவும்.</p>
                         </div>
+                        <span class="d-flex flex-row language-buttons w-100 p-0 m-0 mt-2">
+                            <span class="col-4 pe-1">
+                                <button id="changeToEnglishButton">English</button>
+                            </span>
+                            <span class="col-4 pe-1">
+                                <button id="changeToSinhalaButton">Sinhala</button>
+                            </span>
+                            <span class="col-4">
+                                <button id="changeToTamilButton">Tamil</button>
+                            </span>
+                        </span>
+                        <span class="d-flex flex-row language-buttons w-100 p-0 m-0 mt-2">
+                            <span class="col-4 pe-1">
+                                <button id="changeToSinglish">Singlish</button>
+                            </span>
+                            <span class="col-4 pe-1">
+                                <button id="changeToTanglish">Tanglish</button>
+                            </span>
+                        </span>
                     </div>
                 </div>
                 <div class="bot-message">
@@ -521,21 +544,17 @@
                 </div>
             </div>
         </div>
-        <!-- <div class="d-flex flex-row" style="border-top: solid 1px #e0e0e0; padding-top: 10px;">
-            <form id="questionForm" class="d-flex flex-row col-10" >
-                <input class="form-control chat-input" placeholder="Write message here..." id="question" name="question"
-                    required></input>
-                <button type="submit" class="btn btn-light btn-lg chat-submit-button"><i
-                        class="bi bi-send-fill"></i></button>
-            </form>
-            <button id="startRecording" class="btn btn-light btn-lg recordButton col-2">
-                <i id="startRecordingIcon" class="bi bi-mic-fill"></i>
-            </button>
-        </div> -->
         <div class="d-flex flex-row" style="border-top: solid 1px #e0e0e0; padding-top: 10px;">
-            <form id="questionForm" class="d-flex flex-row">
-                <input class="form-control chat-input" placeholder="Write message here..." id="question" name="question"
+            <form name="questionForm" id="questionForm" class="d-flex flex-row">
+                <div class="d-flex flex-column w-100">
+                    <input class="form-control chat-input" placeholder="Write message here..." id="question" name="question"
                     required></input>
+                <input placeholder="මෙතන සිංග්ලිශ් වලින් ටයිප් කරන්න." onkeyup="startText();" onselect="startText();"
+                    onclick="startText();" class="form-control chat-input" id="box1" style="display:none;"></input>
+                <input placeholder="இங்கே Tanglish இல் தட்டச்சு செய்யவும்.." onkeyup="startTextTanglish();"
+                    onselect="startTextTanglish();" onclick="startTextTanglish();" class="form-control chat-input"
+                    id="box2" name="box2" style="display:none;"></input>
+                </div>
                 <button type="submit" class="btn btn-light btn-lg chat-submit-button"><i
                         class="bi bi-send-fill"></i></button>
             </form>
@@ -617,7 +636,8 @@
 
     </script>
     <script src="../scripts/VoiceBotScript.js" type="text/javascript"></script>
-
+    <script src="../scripts/singlish.js" type="text/javascript"></script>
+    <script src="../scripts/tanglish.js" type="text/javascript"></script>
 </body>
 
 </html>
