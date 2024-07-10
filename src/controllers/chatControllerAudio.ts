@@ -106,6 +106,7 @@ export const chatAudioResponse = async (
       // voiceName = "si-LK-Standard-A";
       responsiveLanguage = 'Sinhala';
       // responsiveVoice.speak("hello world", "Sinhala", {volume: 1});
+      
       translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else if (language === "tamil") {
       languageCode = "ta-IN";
