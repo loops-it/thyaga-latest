@@ -744,6 +744,7 @@ async function startRecording() {
         });
 
         const botAnswer = await responseAnswer.json();
+        console.log("bot answer : ",botAnswer)
 
         if (!localStorage.getItem("chatId")) {
           localStorage.setItem("chatId", botAnswer.chatId);
@@ -751,7 +752,10 @@ async function startRecording() {
         if (botAnswer.answer !== null) {
           appendMessageToResponse("bot", botAnswer.answer, botAnswer);
 
-          if (botAnswer.audioSrc) {
+          if(botAnswer.audioSrc === null){
+            responsiveVoice.speak(botAnswer.answer, "Sinhala", {volume: 1});
+          }
+          else if (botAnswer.audioSrc) {
             const audio = new Audio(botAnswer.audioSrc);
             audio.play();
           }
@@ -768,6 +772,8 @@ async function startRecording() {
     };
 
     mediaRecorder.start();
+
+
     // Change the icon to indicate recording
     document
       .getElementById("startRecordingIcon")

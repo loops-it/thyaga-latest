@@ -99,12 +99,13 @@ export const chatAudioResponse = async (
     let translatedQuestion = "";
     let languageCode = "en-GB";
     let voiceName = "en-GB-Standard-A";
+    let responsiveLanguage = '';
     // console.log("userQuestion : ", userQuestion)
     if (language == "sinhala") {
-      languageCode = "si-LK";
+      // languageCode = "si-LK";
       // voiceName = "si-LK-Standard-A";
-      // languageCode = "ta-IN";
-      voiceName = "ta-IN-Standard-C";
+      responsiveLanguage = 'Sinhala';
+      // responsiveVoice.speak("hello world", "Sinhala", {volume: 1});
       translatedQuestion = await translateToEnglish(transcriptQuestion);
     } else if (language === "tamil") {
       languageCode = "ta-IN";
@@ -257,15 +258,20 @@ export const chatAudioResponse = async (
 
     // add assistant to array
     chatHistory.push({ role: "assistant", content: botResponse });
-
-    const [response] = await textToSpeachClient.synthesizeSpeech({
-      input: { text: translatedResponse },
-      voice: { languageCode: languageCode, name: voiceName, ssmlGender: "NEUTRAL" },
-      audioConfig: { audioEncoding: "MP3" },
-    });
-
-    const audioContent = response.audioContent.toString("base64");
-    const audioSrc = `data:audio/mp3;base64,${audioContent}`;
+    let audioSrc;
+    if(responsiveLanguage === 'Sinhala'){
+      console.log("sinhala response")
+      audioSrc = null
+    }else{
+      const [response] = await textToSpeachClient.synthesizeSpeech({
+        input: { text: translatedResponse },
+        voice: { languageCode: languageCode, name: voiceName, ssmlGender: "NEUTRAL" },
+        audioConfig: { audioEncoding: "MP3" },
+      });
+  
+      const audioContent = response.audioContent.toString("base64");
+      audioSrc = `data:audio/mp3;base64,${audioContent}`;
+    }
 
     await BotChats.create({
       message_id: userChatId,
