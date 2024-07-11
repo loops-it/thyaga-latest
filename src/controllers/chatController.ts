@@ -197,29 +197,34 @@ Standalone question:`;
         //   Standalone question:
         //   `;
 
-        const categoryList = [
-          "personal care",
-          "automobile",
-          "accessories",
-          "opticians",
-          "hotels",
-          "watches",
-          "homeware",
-          "baby",
-          "books & stationery",
-          "pharmacy",
-          "games",
-          "adventure",
-          "fitness",
-          "flora",
-          "super market",
-          "mobile & electronics",
-          "studio",
-          "electronics",
-          "medical",
-          "cafe and restaurants"
-        ];
+        // const categoryList = [
+        //   "personal care",
+        //   "automobile",
+        //   "accessories",
+        //   "opticians",
+        //   "hotels",
+        //   "watches",
+        //   "homeware",
+        //   "baby",
+        //   "books & stationery",
+        //   "pharmacy",
+        //   "games",
+        //   "adventure",
+        //   "fitness",
+        //   "flora",
+        //   "super market",
+        //   "mobile & electronics",
+        //   "studio",
+        //   "electronics",
+        //   "medical",
+        //   "cafe and restaurants",
+        //   'merchants'
+        // ];
 
+        const categoryList = [
+          'merchants',
+          'about'
+        ];
         // const categorySelectionPrompt = `
         // Given a question and a list of categories, identify the category that matches the question. If the question specifically asks for types of merchants or for merchants list, categorize it as "merchants". For all other questions, provide only the exact matching category name from the list. If there is no match, state "Unavailable". Do not add any additional text or punctuation.
         // ----------
@@ -235,6 +240,7 @@ Standalone question:`;
         2. If the question asks for merchants of any specific category (e.g., "hotel merchants"), categorize it as "merchants".
         3. If the question asks for merchants in a specific location (e.g., "merchants in Thyaga"), categorize it as "merchants".
         5. For all other questions, provide only the exact matching category name from the list.
+        6. If the question asks for information about thyaga categorize it as "about". 
         6. If there is no match, state "Unavailable". 
         
         Do not add any additional text or punctuation.
