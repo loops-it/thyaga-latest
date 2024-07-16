@@ -600,10 +600,10 @@ document
     appendMessageToResponse("user", question);
 
     let selectedLanguage;
-    if (selectedLanguageLocal === "singlish") {
-      selectedLanguage = "sinhala";
-    } else if (selectedLanguageLocal === "tanglish") {
-      selectedLanguage = "tamil";
+    if (selectedLanguageLocal === "Singlish") {
+      selectedLanguage = "Sinhala";
+    } else if (selectedLanguageLocal === "Tanglish") {
+      selectedLanguage = "Tamil";
     } else {
       selectedLanguage = selectedLanguageLocal;
     }
@@ -614,12 +614,12 @@ document
     const requestBody = {
       chatId: chatId,
       messages: chatHistory,
-      language: selectedLanguage || "english",
+      language: selectedLanguage || "English",
     };
     const requestBodyAgent = {
       chatId: chatId,
       user_message: question,
-      language: selectedLanguage || "english",
+      language: selectedLanguage || "English",
     };
 
     if (chatWithAgent === false) {
@@ -647,6 +647,7 @@ document
 
         if (!localStorage.getItem("chatId")) {
           localStorage.setItem("chatId", data.chatId);
+          console.log("id: ", data.chatId)
         }
         if (data.answer !== null) {
           appendMessageToResponse("bot", data.answer, data);
@@ -704,10 +705,10 @@ async function startRecording() {
       const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
 
         let selectedLanguage;
-        if (selectedLanguageLocal === "singlish") {
-          selectedLanguage = "sinhala";
-        } else if (selectedLanguageLocal === "tanglish") {
-          selectedLanguage = "tamil";
+        if (selectedLanguageLocal === "Singlish") {
+          selectedLanguage = "Sinhala";
+        } else if (selectedLanguageLocal === "Tanglish") {
+          selectedLanguage = "Tamil";
         } else {
           selectedLanguage = selectedLanguageLocal;
         }
@@ -739,7 +740,7 @@ async function startRecording() {
             transcript: transcript.text,
             chatId: chatId,
             messages: chatHistory,
-            language: selectedLanguage || "english",
+            language: selectedLanguage || "English",
           }),
         });
 
@@ -748,6 +749,7 @@ async function startRecording() {
 
         if (!localStorage.getItem("chatId")) {
           localStorage.setItem("chatId", botAnswer.chatId);
+          
         }
         if (botAnswer.answer !== null) {
           appendMessageToResponse("bot", botAnswer.answer, botAnswer);
@@ -838,8 +840,8 @@ document
   .addEventListener("click", function () {
     document.getElementById("box1").style.display = "none";
     document.getElementById("box2").style.display = "none";
-    localStorage.setItem("selectedLanguage", "english");
-    appendLanguageMessage("Please ask your question in english.");
+    localStorage.setItem("selectedLanguage", "English");
+    appendLanguageMessage("Please ask your question in English.");
   });
 
 // Event listener for language change to sinhala
@@ -848,7 +850,7 @@ document
   .addEventListener("click", function () {
     document.getElementById("box1").style.display = "none";
     document.getElementById("box2").style.display = "none";
-    localStorage.setItem("selectedLanguage", "sinhala");
+    localStorage.setItem("selectedLanguage", "Sinhala");
     appendLanguageMessage("කරුණාකර ඔබේ ප්‍රශ්නය සිංහලෙන් අසන්න.");
   });
 
@@ -858,7 +860,7 @@ document
   .addEventListener("click", function () {
     document.getElementById("box1").style.display = "none";
     document.getElementById("box2").style.display = "none";
-    localStorage.setItem("selectedLanguage", "tamil");
+    localStorage.setItem("selectedLanguage", "Tamil");
     appendLanguageMessage("உங்கள் கேள்வியை தமிழில் கேளுங்கள்.");
   });
 
@@ -868,7 +870,7 @@ document
     document.getElementById("box1").style.display = "block";
     document.getElementById("box2").style.display = "none";
     document.getElementById("question").style.display = "block";
-    localStorage.setItem("selectedLanguage", "singlish");
+    localStorage.setItem("selectedLanguage", "Singlish");
     appendLanguageMessage("කරුණාකර ඔබේ ප්‍රශ්නය සිංහලෙන් අසන්න.");
   });
 
@@ -878,7 +880,7 @@ document
     document.getElementById("box1").style.display = "none";
     document.getElementById("box2").style.display = "block";
     document.getElementById("question").style.display = "block";
-    localStorage.setItem("selectedLanguage", "tanglish");
+    localStorage.setItem("selectedLanguage", "Tanglish");
     appendLanguageMessage("உங்கள் கேள்வியை தமிழில் கேளுங்கள்.");
   });
 

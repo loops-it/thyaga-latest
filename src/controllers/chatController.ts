@@ -71,9 +71,9 @@ export const chatResponse = async (req: RequestWithChatId, res: Response) => {
 
     let translatedQuestion = "";
     // console.log("userQuestion : ", userQuestion)
-    if (language == "sinhala") {
+    if (language == "Sinhala") {
       translatedQuestion = await translateToEnglish(userQuestion);
-    } else if (language === "tamil") {
+    } else if (language === "Tamil") {
       translatedQuestion = await translateToEnglish(userQuestion);
     } else {
       translatedQuestion = userQuestion;
@@ -234,6 +234,8 @@ Standalone question:`;
         // ----------
         // Standalone question:
         // `;
+
+        
         const categorySelectionPrompt = `
         Given a question and a list of categories, identify the appropriate category. Use the following guidelines:
         1. If the question asks for types or a list of categories of merchants, categorize it as "merchants".
@@ -336,12 +338,12 @@ Standalone question:`;
     let selectedLanguage = "en";
     let translatedResponse = "";
     // console.log("userQuestion : ", userQuestion)
-    if (language == "sinhala") {
+    if (language == "Sinhala") {
       selectedLanguage = "si";
       if (botResponse !== null) {
         translatedResponse = await translateToLanguage(botResponse);
       }
-    } else if (language === "tamil") {
+    } else if (language === "Tamil") {
       selectedLanguage = "ta";
       if (botResponse !== null) {
         translatedResponse = await translateToLanguage(botResponse);
