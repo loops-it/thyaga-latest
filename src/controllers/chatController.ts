@@ -120,7 +120,7 @@ export const chatResponse = async (req: RequestWithChatId, res: Response) => {
       const chatHistoryString = JSON.stringify(filteredChatHistory);
 
       const systemMessages = chatHistory.filter(
-        (item: { role: string; }) => item.role === "system"
+        (item: { role: string }) => item.role === "system"
       );
 
       const last15Messages = chatHistory.slice(-15);
@@ -187,81 +187,116 @@ Standalone question:`;
       //   "cafe and restaurants"
       // ];
 
-        // const categorySelectionPrompt = `
-        //   Given a question and a list of categories, identify the category that matches the question. If the question specifically asks for types of merchants, categorize it as "Merchants". For all other questions, provide only the exact matching category name from the list. If there is no match, state "Unavailable". Do not add any additional text or punctuation.
-        //   ----------
-        //   QUESTION: {${completionQuestion.choices[0].text}}
-        //   ----------
-        //   CATEGORY LIST: {${categoryList}}
-        //   ----------
-        //   Standalone question:
-        //   `;
+      // const categorySelectionPrompt = `
+      //   Given a question and a list of categories, identify the category that matches the question. If the question specifically asks for types of merchants, categorize it as "Merchants". For all other questions, provide only the exact matching category name from the list. If there is no match, state "Unavailable". Do not add any additional text or punctuation.
+      //   ----------
+      //   QUESTION: {${completionQuestion.choices[0].text}}
+      //   ----------
+      //   CATEGORY LIST: {${categoryList}}
+      //   ----------
+      //   Standalone question:
+      //   `;
 
-        // const categoryList = [
-        //   "personal care",
-        //   "automobile",
-        //   "accessories",
-        //   "opticians",
-        //   "hotels",
-        //   "watches",
-        //   "homeware",
-        //   "baby",
-        //   "books & stationery",
-        //   "pharmacy",
-        //   "games",
-        //   "adventure",
-        //   "fitness",
-        //   "flora",
-        //   "super market",
-        //   "mobile & electronics",
-        //   "studio",
-        //   "electronics",
-        //   "medical",
-        //   "cafe and restaurants",
-        //   'merchants'
-        // ];
+      // const categoryList = [
+      //   "personal care",
+      //   "automobile",
+      //   "accessories",
+      //   "opticians",
+      //   "hotels",
+      //   "watches",
+      //   "homeware",
+      //   "baby",
+      //   "books & stationery",
+      //   "pharmacy",
+      //   "games",
+      //   "adventure",
+      //   "fitness",
+      //   "flora",
+      //   "super market",
+      //   "mobile & electronics",
+      //   "studio",
+      //   "electronics",
+      //   "medical",
+      //   "cafe and restaurants",
+      //   'merchants'
+      // ];
 
-        const categoryList = [
-          'merchants',
-          'about'
-        ];
-        // const categorySelectionPrompt = `
-        // Given a question and a list of categories, identify the category that matches the question. If the question specifically asks for types of merchants or for merchants list, categorize it as "merchants". For all other questions, provide only the exact matching category name from the list. If there is no match, state "Unavailable". Do not add any additional text or punctuation.
-        // ----------
-        // QUESTION: {${completionQuestion.choices[0].text}}
-        // ----------
-        // CATEGORY LIST: {${categoryList}}
-        // ----------
-        // Standalone question:
-        // `;
+      const categoryList = ["merchants", "about"];
+      // const categorySelectionPrompt = `
+      // Given a question and a list of categories, identify the category that matches the question. If the question specifically asks for types of merchants or for merchants list, categorize it as "merchants". For all other questions, provide only the exact matching category name from the list. If there is no match, state "Unavailable". Do not add any additional text or punctuation.
+      // ----------
+      // QUESTION: {${completionQuestion.choices[0].text}}
+      // ----------
+      // CATEGORY LIST: {${categoryList}}
+      // ----------
+      // Standalone question:
+      // `;
 
-        
-        const categorySelectionPrompt = `
-        Given a question and a list of categories, identify the appropriate category. Use the following guidelines:
-        1. If the question asks for types or a list of categories of merchants, categorize it as "merchants".
-        2. If the question asks for merchants of any specific category (e.g., "hotel merchants"), categorize it as "merchants".
-        3. If the question asks for merchants in a specific location (e.g., "merchants in Thyaga"), categorize it as "merchants".
-        5. For all other questions, provide only the exact matching category name from the list.
-        6. If the question asks for information about thyaga categorize it as "about". 
-        6. If there is no match, state "Unavailable". 
-        
-        Do not add any additional text or punctuation.
-        ----------
-        QUESTION: {${completionQuestion.choices[0].text}}
-        ----------
-        CATEGORY LIST: {${categoryList}}
-        ----------
-        Answer:
-        `;
+      // const categorySelectionPrompt = `
+      // Given a question and a list of categories, identify the appropriate category. Use the following guidelines:
+      // 1. If the question asks for types or a list of categories of merchants, categorize it as "merchants".
+      // 2. If the question asks for merchants of any specific category (e.g., "hotel merchants"), categorize it as "merchants".
+      // 3. If the question asks for merchants in a specific location (e.g., "merchants in Thyaga"), categorize it as "merchants".
+      // 5. For all other questions, provide only the exact matching category name from the list.
+      // 6. If the question asks for information about thyaga categorize it as "about".
+      // 6. If there is no match, state "Unavailable".
 
-        const categorySelection = await openai.completions.create({
-          model: "gpt-3.5-turbo-instruct",
-          prompt: categorySelectionPrompt,
-          max_tokens: 50,
-          temperature: 0,
-        });
+      // Do not add any additional text or punctuation.
+      // ----------
+      // QUESTION: {${completionQuestion.choices[0].text}}
+      // ----------
+      // CATEGORY LIST: {${categoryList}}
+      // ----------
+      // Answer:
+      // `;
 
-        console.log("Category :", categorySelection.choices[0].text.trim());
+//       const categorySelectionPrompt = `
+// Given a question and a list of categories, identify the appropriate category. Use the following guidelines:
+// 1. If the question asks for types or a list of categories of merchants, categorize it as "merchants".
+// 2. If the question asks for merchants of any specific category (e.g., "hotel merchants"), categorize it as "merchants".
+// 3. If the question asks for merchants in a specific location (e.g., "merchants in Thyaga"), categorize it as "merchants".
+// 4. If the question asks for Thyaga merchants or similar variations, categorize it as "merchants".
+// 5. For all other questions, provide only the exact matching category name from the list.
+// 6. If the question asks for information about Thyaga, categorize it as "about".
+// 7. If there is no match, state "Unavailable".
+
+// Do not add any additional text or punctuation.
+// ----------
+// QUESTION: {${completionQuestion.choices[0].text}}
+// ----------
+// CATEGORY LIST: {${categoryList}}
+// ----------
+// Answer:
+// `;
+
+const categorySelectionPrompt = `
+Given a question and a list of categories, identify the appropriate category. Use the following guidelines:
+1. If the question asks for types or a list of categories of merchants, categorize it as "merchants".
+2. If the question asks for merchants of any specific category (e.g., "hotel merchants"), categorize it as "merchants".
+3. If the question asks for merchants in a specific location (e.g., "merchants in Thyaga"), categorize it as "merchants".
+4. If the question asks for Thyaga merchants, who are the merchants, or any similar variations, categorize it as "merchants".
+5. For all other questions, provide only the exact matching category name from the list.
+6. If the question asks for information about Thyaga, categorize it as "about".
+7. If there is no match, state "Unavailable".
+
+Do not add any additional text or punctuation.
+----------
+QUESTION: {${completionQuestion.choices[0].text}}
+----------
+CATEGORY LIST: {${categoryList}}
+----------
+Answer:
+`;
+
+
+      const categorySelection = await openai.completions.create({
+        model: "gpt-3.5-turbo-instruct",
+        prompt: categorySelectionPrompt,
+        max_tokens: 50,
+        temperature: 0,
+      });
+
+      console.log("Category :", categorySelection.choices[0].text.trim());
       // =============================================================================
 
       // =============================================================================
@@ -272,24 +307,24 @@ Standalone question:`;
       });
       // console.log(embedding.data[0].embedding);
 
-        let queryResponse;
+      let queryResponse;
 
-        if (categorySelection.choices[0].text.trim() === "Unavailable") {
-          queryResponse = await namespace.query({
-            vector: embedding.data[0].embedding,
-            topK: kValue,
-            includeMetadata: true,
-          });
-        } else {
-          queryResponse = await namespace.query({
-            vector: embedding.data[0].embedding,
-            topK: kValue,
-            filter: {
-              Category: { $eq: categorySelection.choices[0].text.trim() },
-            },
-            includeMetadata: true,
-          });
-        }
+      if (categorySelection.choices[0].text.trim() === "Unavailable") {
+        queryResponse = await namespace.query({
+          vector: embedding.data[0].embedding,
+          topK: kValue,
+          includeMetadata: true,
+        });
+      } else {
+        queryResponse = await namespace.query({
+          vector: embedding.data[0].embedding,
+          topK: kValue,
+          filter: {
+            Category: { $eq: categorySelection.choices[0].text.trim() },
+          },
+          includeMetadata: true,
+        });
+      }
 
       // =============================================================================
       // query from pinecone
@@ -321,22 +356,23 @@ Standalone question:`;
 
 // For specific questions about available categories (e.g., "What are the choices available in Thyaga?"), provide the relevant categories as listed in the context. If the user asks about Supermarkets using the Thyaga voucher, respond with the information you have available, but clarify if specific details aren't listed.
 
-// If a user asks a math question relevant to the given context, provide the calculated answer. For any questions not relevant to the context, provide the best available information based on what you have. 
+// If a user asks a math question relevant to the given context, provide the calculated answer. For any questions not relevant to the context, strictly say: "Sorry, I couldn't find any information on that. Would you like to chat with a live agent?".
 
 // Do NOT make up any answers or provide information not relevant to the context using public information.
-
 // `;
 
 
-const sysPrompt = `You are a helpful assistant and you are friendly. If the user greets you, respond warmly. Your name is Thyaga GPT. Answer user questions only based on the given context: ${context}. Your answer must be less than 180 tokens. If the user asks for information like your email or address, provide the Thyaga email and address. If your answer has a list, format it as a numbered list.
+      const sysPrompt = `You are a helpful assistant and you are friendly. If the user greets you, respond warmly. Your name is Thyaga GPT. Answer user questions only based on the given context: ${context}. Your answer must be less than 180 tokens. If the user asks for information like your email or address, provide the Thyaga email and address. If your answer has a list, format it as a numbered list.
 
-For specific questions about available categories (e.g., "What are the choices available in Thyaga?"), provide the relevant categories as listed in the context. If the user asks about Supermarkets using the Thyaga voucher, respond with the information you have available, but clarify if specific details aren't listed.
+      For specific questions about available categories (e.g., "What are the choices available in Thyaga?"), provide the relevant categories as listed in the context. If the user asks about Supermarkets using the Thyaga voucher, respond with the information you have available, but clarify if specific details aren't listed.
 
-For any questions not relevant to the context, provide the best available information based on what you have.
+      For any questions not relevant to the context, provide the best available information based on what you have.
 
-If user question is not relevent to the Context just say "Sorry, I couldn't find any information on that. Would you like to chat with a live agent?".
-Do NOT make up any answers or provide information not relevant to the context using public information.
-`;
+      If user question is not relevent to the Context just say "Sorry, I couldn't find any information. Would you like to chat with a live agent?".
+      Do NOT make up any answers or provide information not relevant to the context using public information.
+      `;
+
+      // const sysPrompt = `You are a helpful assistant and you are friendly. if user greet you you will give proper greeting in friendly manner. Your name is Thyaga GPT. Answer user question Only based on given Context: ${context}, your answer must be less than 150 words. If the user asks for information like your email or address, you'll provide Thyaga email and address. If answer has list give it as numberd list. If it has math question relevent to given Context give calculated answer, If user question is not relevent to the Context just say "Sorry, I couldn't find any information on that. Would you like to chat with a live agent?". Do NOT make up any answers and questions not relevant to the context using public information.`;
 
       if (chatHistory.length === 0 || chatHistory[0].role !== "system") {
         chatHistory.unshift({ role: "system", content: "" });

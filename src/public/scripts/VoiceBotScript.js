@@ -202,7 +202,7 @@ function appendMessageToResponse(role, content, data, isRatingForm = false) {
     appendListContent(messageDiv, content);
   } else if (
     content.includes(
-      "Sorry, I couldn't find any information on that. Would you like to chat with a live agent?"
+      "Sorry, I couldn't find any information. Would you like to chat with a live agent?"
     )
   ) {
     appendLiveAgentContent(messageDiv, content, data);
