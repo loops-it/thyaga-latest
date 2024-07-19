@@ -632,6 +632,8 @@ document
       document.getElementById("questionForm").style.width = "100%";
 
       try {
+        // Clear the input
+        questionInput.value = "";
         const response = await fetch("/api/chat-response", {
           method: "POST",
           headers: {
@@ -653,8 +655,7 @@ document
           appendMessageToResponse("bot", data.answer, data);
         }
 
-        // Clear the input
-        questionInput.value = "";
+        
         // Show record button
         document.getElementById("startRecording").style.display = "block";
         document.getElementById("questionForm").style.width = "85%";
