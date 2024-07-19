@@ -687,21 +687,6 @@ document
 let mediaRecorder;
 let audioChunks = [];
 
-let currentAudio = null;
-
-// Function to stop current audio
-function stopSpeaking() {
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-    }
-    responsiveVoice.cancel();
-    document.getElementById("stopSpeaking").style.display = "none";
-}
-
-document.getElementById("stopSpeaking").addEventListener("click", stopSpeaking);
-
-
 // Function to handle starting the recording
 async function startRecording() {
   try {
@@ -771,18 +756,12 @@ async function startRecording() {
           appendMessageToResponse("bot", botAnswer.answer, botAnswer);
 
           if(botAnswer.audioSrc === null){
-            responsiveVoice.speak(botAnswer.answer, selectedLanguage, {volume: 1});
-            document.getElementById("stopSpeaking").style.display = "block";
+            responsiveVoice.speak(botAnswer.answer, "Sinhala", {volume: 1});
           }
           else if (botAnswer.audioSrc) {
-            currentAudio = new Audio(botAnswer.audioSrc);
-            currentAudio.play();
-            document.getElementById("stopSpeaking").style.display = "block"; // Show stop button
-            currentAudio.onended = () => {
-                document.getElementById("stopSpeaking").style.display = "none"; // Hide stop button when audio ends
-            };
+            const audio = new Audio(botAnswer.audioSrc);
+            audio.play();
           }
-          // document.getElementById("stopSpeaking").style.display = "none";
         }
         hideTypingAnimation();
       } catch (error) {
