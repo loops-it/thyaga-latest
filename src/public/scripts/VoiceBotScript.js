@@ -584,7 +584,6 @@ function appendLanguageMessage(content) {
 }
 
 // Event listener - question form submission
-// Event listener - question form submission
 document
   .getElementById("questionForm")
   .addEventListener("submit", async function (event) {
@@ -655,7 +654,7 @@ document
           appendMessageToResponse("bot", data.answer, data);
         }
 
-        
+
         // Show record button
         document.getElementById("startRecording").style.display = "block";
         document.getElementById("questionForm").style.width = "85%";
@@ -684,10 +683,188 @@ document
   });
 
 // Audio recording function
+// let mediaRecorder;
+// let audioChunks = [];
+// let currentAudio = null;
+
+// // Function to stop current audio
+// function stopSpeaking() {
+//   if (currentAudio) {
+//     currentAudio.pause();
+//     currentAudio.currentTime = 0;
+//   }
+//   responsiveVoice.cancel();
+//   document.getElementById("stopSpeaking").style.display = "none";
+//   document.getElementById("startRecording").style.display = "block";
+// }
+
+// document.getElementById("stopSpeaking").addEventListener("click", stopSpeaking);
+
+
+// // Function to handle starting the recording
+// async function startRecording() {
+//   try {
+//     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+//     mediaRecorder = new MediaRecorder(stream);
+
+//     mediaRecorder.ondataavailable = (event) => {
+//       audioChunks.push(event.data);
+//     };
+
+//     mediaRecorder.onstop = async () => {
+//       const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+//       audioChunks = [];
+
+
+
+//       const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
+
+//       let selectedLanguage;
+//       if (selectedLanguageLocal === "Singlish") {
+//         selectedLanguage = "Sinhala";
+//       } else if (selectedLanguageLocal === "Tanglish") {
+//         selectedLanguage = "Tamil";
+//       } else {
+//         selectedLanguage = selectedLanguageLocal;
+//       }
+
+//       const formData = new FormData();
+//       formData.append("audio", audioBlob);
+//       formData.append("language", selectedLanguage);
+
+//       try {
+//         const response = await fetch("/recording-start", {
+//           method: "POST",
+//           body: formData,
+//         });
+
+//         const transcript = await response.json();
+//         appendMessageToResponse("user", transcript.text);
+//         chatHistory.push({ role: "user", content: transcript.text });
+//         showTypingAnimation();
+
+//         let chatId = localStorage.getItem("chatId");
+
+
+//         const responseAnswer = await fetch("/voice-chat-response", {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify({
+//             transcript: transcript.text,
+//             chatId: chatId,
+//             messages: chatHistory,
+//             language: selectedLanguage || "English",
+//           }),
+//         });
+
+//         const botAnswer = await responseAnswer.json();
+//         console.log("bot answer : ", botAnswer)
+
+//         if (!localStorage.getItem("chatId")) {
+//           localStorage.setItem("chatId", botAnswer.chatId);
+
+//         }
+//         if (botAnswer.answer !== null) {
+//           appendMessageToResponse("bot", botAnswer.answer, botAnswer);
+
+//           if (botAnswer.audioSrc === null) {
+//             responsiveVoice.speak(botAnswer.answer, selectedLanguage, { volume: 1 });
+//             document.getElementById("stopSpeaking").style.display = "block";
+//             document.getElementById("startRecording").style.display = "none";
+//             responsiveVoice.onend = () => {
+//               stopSpeaking();
+//             };
+//           }
+//           else if (botAnswer.audioSrc) {
+//             currentAudio = new Audio(botAnswer.audioSrc);
+//             currentAudio.play();
+//             document.getElementById("stopSpeaking").style.display = "block";
+//             document.getElementById("startRecording").style.display = "none";
+//             currentAudio.onended = () => {
+//               stopSpeaking();
+//             };
+//           }
+//           // document.getElementById("stopSpeaking").style.display = "none";
+//         }
+//         hideTypingAnimation();
+//       } catch (error) {
+//         console.error("Error fetching transcript:", error);
+//       } finally {
+//         // Show input and send button after sending the recording
+//         document.getElementById("question").style.display = "block";
+//         document.querySelector(".chat-submit-button").style.display = "block";
+//         document.getElementById("startRecording").style.display = "block";
+//       }
+//     };
+
+//     mediaRecorder.start();
+
+
+//     // Change the icon to indicate recording
+//     document
+//       .getElementById("startRecordingIcon")
+//       .classList.remove("bi-mic-fill");
+//     documents
+//       .getElementById("startRecordingIcon")
+//       .classList.add("bi-mic-mute-fill");
+//     // Hide input and send button when recording starts
+//     document.getElementById("question").style.display = "none";
+//     document.querySelector(".chat-submit-button").style.display = "none";
+//   } catch (error) {
+//     console.error("Error accessing microphone:", error);
+//   }
+// }
+
+// // Function to handle stopping the recording
+// function stopRecording() {
+//   if (mediaRecorder && mediaRecorder.state !== "inactive") {
+//     mediaRecorder.stop();
+//     // Revert the icon back to the original state
+//     document
+//       .getElementById("startRecordingIcon")
+//       .classList.remove("bi-mic-mute-fill");
+//     document.getElementById("startRecordingIcon").classList.add("bi-mic-fill");
+//   }
+// }
+
+// // Event listeners for the recording button
+// document
+//   .getElementById("startRecording")
+//   .addEventListener("mousedown", startRecording);
+// document
+//   .getElementById("startRecording")
+//   .addEventListener("mouseup", stopRecording);
+// document
+//   .getElementById("startRecording")
+//   .addEventListener("touchstart", (e) => {
+//     e.preventDefault();
+//     startRecording();
+//   });
+// document.getElementById("startRecording").addEventListener("touchend", (e) => {
+//   e.preventDefault();
+//   stopRecording();
+// });
+
+// document.getElementById("question").addEventListener("input", () => {
+//   document.getElementById("startRecording").style.display = "none";
+//   document.getElementById("questionForm").style.width = "100%";
+// });
+// document.getElementById("box1").addEventListener("input", () => {
+//   document.getElementById("startRecording").style.display = "none";
+//   document.getElementById("questionForm").style.width = "100%";
+// });
+// document.getElementById("box2").addEventListener("input", () => {
+//   document.getElementById("startRecording").style.display = "none";
+//   document.getElementById("questionForm").style.width = "100%";
+// });
+
+
 let mediaRecorder;
 let audioChunks = [];
-
 let currentAudio = null;
+let isRecordingInProgress = false;  // Flag to check if recording is in progress
 
 // Function to stop current audio
 function stopSpeaking() {
@@ -697,164 +874,172 @@ function stopSpeaking() {
     }
     responsiveVoice.cancel();
     document.getElementById("stopSpeaking").style.display = "none";
+    document.getElementById("startRecording").style.display = "block";
+    document.getElementById("startRecording").disabled = false;
+    document.getElementById("startRecordingIcon").classList.remove("bi-three-dots", "loading");
+    document.getElementById("startRecordingIcon").classList.add("bi-mic-fill");
+    isRecordingInProgress = false;  // Reset the flag
 }
 
 document.getElementById("stopSpeaking").addEventListener("click", stopSpeaking);
 
-
 // Function to handle starting the recording
 async function startRecording() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+    if (isRecordingInProgress) return;  // Check if a recording is already in progress
+    isRecordingInProgress = true;  // Set the flag to indicate recording is in progress
 
-    mediaRecorder.ondataavailable = (event) => {
-      audioChunks.push(event.data);
-    };
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-      audioChunks = [];
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
 
-      
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            audioChunks = [];
 
-      const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
+            const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
 
-        let selectedLanguage;
-        if (selectedLanguageLocal === "Singlish") {
-          selectedLanguage = "Sinhala";
-        } else if (selectedLanguageLocal === "Tanglish") {
-          selectedLanguage = "Tamil";
-        } else {
-          selectedLanguage = selectedLanguageLocal;
-        }
+            let selectedLanguage;
+            if (selectedLanguageLocal === "Singlish") {
+                selectedLanguage = "Sinhala";
+            } else if (selectedLanguageLocal === "Tanglish") {
+                selectedLanguage = "Tamil";
+            } else {
+                selectedLanguage = selectedLanguageLocal;
+            }
 
-        const formData = new FormData();
-      formData.append("audio", audioBlob);
-      formData.append("language", selectedLanguage);
+            const formData = new FormData();
+            formData.append("audio", audioBlob);
+            formData.append("language", selectedLanguage);
 
-      try {
-        const response = await fetch("/recording-start", {
-          method: "POST",
-          body: formData,
-        });
+            try {
+                const response = await fetch("/recording-start", {
+                    method: "POST",
+                    body: formData,
+                });
 
-        const transcript = await response.json();
-        appendMessageToResponse("user", transcript.text);
-        chatHistory.push({ role: "user", content: transcript.text });
-        showTypingAnimation();
+                const transcript = await response.json();
+                appendMessageToResponse("user", transcript.text);
+                chatHistory.push({ role: "user", content: transcript.text });
+                showTypingAnimation();
 
-        let chatId = localStorage.getItem("chatId");
-        
+                // Disable startRecording button and change icon
+                document.getElementById("startRecording").disabled = true;
+                document.getElementById("startRecordingIcon").classList.remove("bi-mic-fill");
+                document.getElementById("startRecordingIcon").classList.add("bi-three-dots", "loading");
 
-        const responseAnswer = await fetch("/voice-chat-response", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            transcript: transcript.text,
-            chatId: chatId,
-            messages: chatHistory,
-            language: selectedLanguage || "English",
-          }),
-        });
+                let chatId = localStorage.getItem("chatId");
 
-        const botAnswer = await responseAnswer.json();
-        console.log("bot answer : ",botAnswer)
+                const responseAnswer = await fetch("/voice-chat-response", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        transcript: transcript.text,
+                        chatId: chatId,
+                        messages: chatHistory,
+                        language: selectedLanguage || "English",
+                    }),
+                });
 
-        if (!localStorage.getItem("chatId")) {
-          localStorage.setItem("chatId", botAnswer.chatId);
-          
-        }
-        if (botAnswer.answer !== null) {
-          appendMessageToResponse("bot", botAnswer.answer, botAnswer);
+                const botAnswer = await responseAnswer.json();
+                console.log("bot answer : ", botAnswer);
 
-          if(botAnswer.audioSrc === null){
-            responsiveVoice.speak(botAnswer.answer, selectedLanguage, {volume: 1});
-            document.getElementById("stopSpeaking").style.display = "block";
-          }
-          else if (botAnswer.audioSrc) {
-            currentAudio = new Audio(botAnswer.audioSrc);
-            currentAudio.play();
-            document.getElementById("stopSpeaking").style.display = "block"; // Show stop button
-            currentAudio.onended = () => {
-                document.getElementById("stopSpeaking").style.display = "none"; // Hide stop button when audio ends
-            };
-          }
-          // document.getElementById("stopSpeaking").style.display = "none";
-        }
-        hideTypingAnimation();
-      } catch (error) {
-        console.error("Error fetching transcript:", error);
-      } finally {
-        // Show input and send button after sending the recording
-        document.getElementById("question").style.display = "block";
-        document.querySelector(".chat-submit-button").style.display = "block";
-        document.getElementById("startRecording").style.display = "block";
-      }
-    };
+                if (!localStorage.getItem("chatId")) {
+                    localStorage.setItem("chatId", botAnswer.chatId);
+                }
+                if (botAnswer.answer !== null) {
+                    appendMessageToResponse("bot", botAnswer.answer, botAnswer);
 
-    mediaRecorder.start();
+                    if (botAnswer.audioSrc === null) {
+                        responsiveVoice.speak(botAnswer.answer, selectedLanguage, { volume: 1 });
+                        responsiveVoice.onstart = () => {
+                            document.getElementById("startRecording").style.display = "none";
+                            document.getElementById("stopSpeaking").style.display = "block";
+                        };
+                        responsiveVoice.onend = () => {
+                            stopSpeaking();
+                        };
+                    } else if (botAnswer.audioSrc) {
+                        currentAudio = new Audio(botAnswer.audioSrc);
+                        currentAudio.play();
+                        currentAudio.onplay = () => {
+                            document.getElementById("startRecording").style.display = "none";
+                            document.getElementById("stopSpeaking").style.display = "block";
+                        };
+                        currentAudio.onended = () => {
+                            stopSpeaking();
+                        };
+                    }
+                }
+                hideTypingAnimation();
+            } catch (error) {
+                console.error("Error fetching transcript:", error);
+            } finally {
+                // Show input and send button after sending the recording
+                document.getElementById("question").style.display = "block";
+                document.querySelector(".chat-submit-button").style.display = "block";
+                isRecordingInProgress = false;  // Reset the flag in case of error
+            }
+        };
 
+        mediaRecorder.start();
 
-    // Change the icon to indicate recording
-    document
-      .getElementById("startRecordingIcon")
-      .classList.remove("bi-mic-fill");
-    document
-      .getElementById("startRecordingIcon")
-      .classList.add("bi-mic-mute-fill");
-    // Hide input and send button when recording starts
-    document.getElementById("question").style.display = "none";
-    document.querySelector(".chat-submit-button").style.display = "none";
-  } catch (error) {
-    console.error("Error accessing microphone:", error);
-  }
+        // Change the icon to indicate recording
+        document.getElementById("startRecordingIcon").classList.remove("bi-mic-fill");
+        document.getElementById("startRecordingIcon").classList.add("bi-mic-mute-fill");
+        // Hide input and send button when recording starts
+        document.getElementById("question").style.display = "none";
+        document.querySelector(".chat-submit-button").style.display = "none";
+    } catch (error) {
+        console.error("Error accessing microphone:", error);
+        isRecordingInProgress = false;  // Reset the flag in case of error
+    }
 }
 
 // Function to handle stopping the recording
 function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== "inactive") {
-    mediaRecorder.stop();
-    // Revert the icon back to the original state
-    document
-      .getElementById("startRecordingIcon")
-      .classList.remove("bi-mic-mute-fill");
-    document.getElementById("startRecordingIcon").classList.add("bi-mic-fill");
-  }
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+        // Revert the icon back to the original state
+        document.getElementById("startRecordingIcon").classList.remove("bi-mic-mute-fill");
+        document.getElementById("startRecordingIcon").classList.add("bi-mic-fill");
+    }
 }
 
 // Event listeners for the recording button
-document
-  .getElementById("startRecording")
-  .addEventListener("mousedown", startRecording);
-document
-  .getElementById("startRecording")
-  .addEventListener("mouseup", stopRecording);
-document
-  .getElementById("startRecording")
-  .addEventListener("touchstart", (e) => {
+document.getElementById("startRecording").addEventListener("mousedown", startRecording);
+document.getElementById("startRecording").addEventListener("mouseup", stopRecording);
+document.getElementById("startRecording").addEventListener("touchstart", (e) => {
     e.preventDefault();
     startRecording();
-  });
+});
 document.getElementById("startRecording").addEventListener("touchend", (e) => {
-  e.preventDefault();
-  stopRecording();
+    e.preventDefault();
+    stopRecording();
 });
 
 document.getElementById("question").addEventListener("input", () => {
-  document.getElementById("startRecording").style.display = "none";
-  document.getElementById("questionForm").style.width = "100%";
+    document.getElementById("startRecording").style.display = "none";
+    document.getElementById("questionForm").style.width = "100%";
 });
 document.getElementById("box1").addEventListener("input", () => {
-  document.getElementById("startRecording").style.display = "none";
-  document.getElementById("questionForm").style.width = "100%";
+    document.getElementById("startRecording").style.display = "none";
+    document.getElementById("questionForm").style.width = "100%";
 });
 document.getElementById("box2").addEventListener("input", () => {
-  document.getElementById("startRecording").style.display = "none";
-  document.getElementById("questionForm").style.width = "100%";
+    document.getElementById("startRecording").style.display = "none";
+    document.getElementById("questionForm").style.width = "100%";
 });
+
+
+
+
+
 
 // Event listener for language change to english
 document
