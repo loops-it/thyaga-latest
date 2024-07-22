@@ -20,6 +20,7 @@ export const liveChatsOnload = async (req: Request, res: Response, next: NextFun
             "agent" : "unassigned",
             "status" : "live",
         },
+        order: [['id', 'DESC']]
       });
     const languages  = await AgentLanguages.findAll({
         where: {
@@ -82,6 +83,7 @@ export const refreshLiveChats = async (req: Request, res: Response, next: NextFu
           "agent" : "unassigned",
           "status" : "live",
       },
+      order: [['id', 'DESC']]
     });
   const languages  = await AgentLanguages.findAll({
       where: {
