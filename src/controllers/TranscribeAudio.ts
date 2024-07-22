@@ -80,9 +80,9 @@ export const chatTranscribeAudio = async (
 
 
   let languageCode = "en-US"; 
-  if (language === "sinhala") {
+  if (language === "Sinhala") {
     languageCode = "si-LK";
-  } else if (language === "tamil") {
+  } else if (language === "Tamil") {
     languageCode = "ta-IN";
   }
 

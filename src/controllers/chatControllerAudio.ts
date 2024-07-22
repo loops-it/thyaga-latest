@@ -101,14 +101,14 @@ export const chatAudioResponse = async (
     let voiceName = "en-GB-Standard-A";
     let responsiveLanguage = '';
     // console.log("userQuestion : ", userQuestion)
-    if (language == "sinhala") {
+    if (language == "Sinhala") {
       // languageCode = "si-LK";
       // voiceName = "si-LK-Standard-A";
       responsiveLanguage = 'Sinhala';
       // responsiveVoice.speak("hello world", "Sinhala", {volume: 1});
       
       translatedQuestion = await translateToEnglish(transcriptQuestion);
-    } else if (language === "tamil") {
+    } else if (language === "Tamil") {
       languageCode = "ta-IN";
       voiceName = "ta-IN-Standard-C";
       translatedQuestion = await translateToEnglish(transcriptQuestion);
@@ -225,12 +225,12 @@ export const chatAudioResponse = async (
     let selectedLanguage = "en";
     let translatedResponse = "";
     // console.log("userQuestion : ", userQuestion)
-    if (language == "sinhala") {
+    if (language == "Sinhala") {
       selectedLanguage = "si";
       if (botResponse !== null) {
         translatedResponse = await translateToLanguage(botResponse);
       }
-    } else if (language === "tamil") {
+    } else if (language === "Tamil") {
       selectedLanguage = "ta";
       if (botResponse !== null) {
         translatedResponse = await translateToLanguage(botResponse);
