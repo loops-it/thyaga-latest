@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize';
 
 const sequelize = new Sequelize({
     dialect: 'mysql',
+    timezone: 'Asia/Colombo',
     dialectModule: require('mysql2'),
     host: '3.111.92.159',
     port: 3306,
