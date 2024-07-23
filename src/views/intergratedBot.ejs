@@ -23,6 +23,9 @@
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
     <style>
+        :root {
+            --primary-color: #1C73D4;
+        }
         .container {
             width: 360px;
             position: absolute;
@@ -54,7 +57,7 @@
             padding: 10px;
             border-top-left-radius: 0px;
             font-size: 12px;
-            background-color: #1C73D4;
+            background-color:  var(--primary-color);
             color: #fff !important;
             display: flex;
             flex-direction: column;
@@ -113,7 +116,7 @@
             padding: 10px;
             border-top-left-radius: 0px;
             font-size: 12px;
-            background-color: #1C73D4;
+            background-color:  var(--primary-color);
             color: #fff !important;
             display: flex;
             flex-direction: column;
@@ -179,7 +182,7 @@
             bottom: 10px;
             background-color: transparent;
             border-radius: 100%;
-            color: #1C73D4;
+            color:  var(--primary-color);
             /* color: #BFBFBF; */
             padding: 10px;
             font-size: 20px;
@@ -188,13 +191,13 @@
             width: 40px;
             height: 40px;
             margin-right: 5px;
-            /* border: solid 1px #1C73D4; */
+            /* border: solid 1px  var(--primary-color); */
         }
 
         .recordButton {
             background-color: transparent;
             border-radius: 100%;
-            color: #1C73D4;
+            color:  var(--primary-color);
             padding: 10px;
             font-size: 20px;
             line-height: 20px;
@@ -225,7 +228,7 @@
         }
 
         .chat-header {
-            background-color: #1C73D4;
+            background-color:  var(--primary-color);
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }
@@ -258,7 +261,7 @@
             font-family: "Poppins", sans-serif;
             font-size: 12px;
             border-radius: 15px;
-            background-color: #1C73D4;
+            background-color:  var(--primary-color);
             border: none;
             color: #fff;
             width: 100%;
@@ -391,7 +394,7 @@
         }
 
         .quickQuestionButton {
-            background-color: #1C73D4;
+            background-color:  var(--primary-color);
             border-radius: 5px;
             border: none;
             color: #fff;
@@ -420,7 +423,7 @@
         }
 
         .powerdTextBox span {
-            color: #1C73D4;
+            color:  var(--primary-color);
             font-weight: 600;
         }
 
@@ -428,7 +431,7 @@
             background-color: #fff;
             border-radius: 5px;
             border: none;
-            color: #1C73D4;
+            color:  var(--primary-color);
             font-weight: 400;
             font-size: 12px;
             font-family: "Poppins", sans-serif;
@@ -438,7 +441,7 @@
 
         .btnNotoClose,
         .btnYesToClose {
-            background-color: #1C73D4;
+            background-color:  var(--primary-color);
             border-radius: 5px;
             border: none;
             color: #fff;
@@ -453,7 +456,7 @@
 
         .star-rating-form {
             width: 280px;
-            border: solid 1px #1C73D4;
+            border: solid 1px  var(--primary-color);
         }
 
         .rating-icon {
@@ -465,7 +468,7 @@
             background-color: #fff;
             border-radius: 5px;
             border: none;
-            color: #1C73D4;
+            color:  var(--primary-color);
             font-weight: 400;
             font-size: 12px;
             font-family: "Poppins", sans-serif;
@@ -594,7 +597,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
-
     <script>
         var quickQuestions = [];
 <% for (var i = 0; i < questions.length; i++) { %>
@@ -656,6 +658,8 @@
     <script src="../scripts/VoiceBotScript.js" type="text/javascript"></script>
     <script src="../scripts/singlish.js" type="text/javascript"></script>
     <script src="../scripts/tanglish.js" type="text/javascript"></script>
+    <script src="../scripts/colorChange.js" type="text/javascript"></script>
+
 </body>
 
 </html>
