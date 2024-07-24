@@ -77,6 +77,8 @@ import { Op } from "sequelize";
 import { chatAudioResponse } from "./controllers/chatControllerAudio";
 import multer from "multer";
 import { chatTranscribeAudio } from "./controllers/TranscribeAudio";
+import { customizeBot } from "./controllers/CustomizeBot";
+import { CustomizeBotView } from "./controllers/CustomizeBotView";
 const app = express();
 app.use(cookieParser());
 // Set up view engine
@@ -116,6 +118,9 @@ app.use("/voice-bot", indexRouter);
 app.use("/live-agent", indexRouter);
 app.use("/voice-and-chat-bot", indexRouter);
 
+
+
+
 app.post('/recording-start', upload.single('audio'), chatTranscribeAudio);
 
 app.post("/api/chat-response", chatResponse);
@@ -130,6 +135,15 @@ app.get("/upload-documents", adminLogged, (req: Request, res: Response) => {
   res.render("upload-documents");
 });
 app.get("/edit-document", adminLogged, editDocument);
+
+
+app.get("/view-documents-all", adminLogged, CustomizeBotView);
+app.post("/bot-customization", adminLogged, customizeBot);
+
+
+
+
+
 app.post("/upload-documents", handleFileUpload, uploadDocuments);
 
 app.post("/update-document", handleFileUploadUpdate, updateDocuments);

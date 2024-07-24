@@ -27,4 +27,8 @@ router.get('/voice-and-chat-bot', async (req: Request, res: Response) => {
     res.render('intergratedBot',{questions: questions});
 });
 
+router.get('/bot-customization', async (req: Request, res: Response) => {
+    res.render('customization');
+});
+
 export default router;
