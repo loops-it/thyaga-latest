@@ -23,9 +23,6 @@
     integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
     crossorigin="anonymous"></script>
   <style>
-    :root {
-            --primary-color: #1C73D4;
-        }
     .container {
       width: 360px;
       position: absolute;
@@ -57,7 +54,7 @@
       padding: 10px;
       border-top-left-radius: 0px;
       font-size: 12px;
-      background-color:  var(--primary-color);
+      background-color: #1C73D4;
       color: #fff !important;
       display: flex;
       flex-direction: column;
@@ -152,13 +149,13 @@
       bottom: 10px;
       background-color: transparent;
       border-radius: 100%;
-      color:  var(--primary-color);
+      color: #1C73D4;
       /* color: #BFBFBF; */
       padding: 10px;
       font-size: 20px;
       line-height: 20px;
       font-family: "Poppins", sans-serif;
-      border: solid 1px  var(--primary-color);
+      border: solid 1px #1C73D4;
     }
 
     .chat-submit-button:hover {
@@ -172,7 +169,7 @@
     }
 
     .chat-header {
-      background-color:  var(--primary-color);
+      background-color: #1C73D4;
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
     }
@@ -333,7 +330,7 @@
     }
 
     .quickQuestionButton {
-      background-color:  var(--primary-color);
+      background-color: #1C73D4;
       border-radius: 5px;
       border: none;
       color: #fff;
@@ -362,7 +359,7 @@
     }
 
     .powerdTextBox span {
-      color:  var(--primary-color);
+      color: #1C73D4;
       font-weight: 600;
     }
 
@@ -370,8 +367,8 @@
       font-family: "Poppins", sans-serif;
       font-size: 12px;
       border-radius: 8px;
-      background-color:  var(--primary-color);
-      border: solid 1px  var(--primary-color);
+      background-color: #1C73D4;
+      border: solid 1px #1C73D4;
       color: #fff;
       width: 100%;
       padding-top: 5px;
@@ -381,7 +378,7 @@
 
     .language-buttons button:hover {
       background-color: #fff;
-      color:  var(--primary-color);
+      color: #1C73D4;
     }
   </style>
 </head>
@@ -391,7 +388,7 @@
     <div class="d-flex chat-header w-100 py-2 text-center justify-content-between align-items-center">
       <div class="d-flex flex-row">
         <div class="d-flex ps-3 pe-2 py-1 position-relative">
-          <img id="agentImage1" src="/agent.png" alt="Agent" style="height: 60px; width: auto;" class="agentImage">
+          <img src="/agent.png" alt="" class="" style="height: 60px; width: auto;">
           <span class="position-absolute start-100 translate-middle p-1 rounded-circle"
             style="background-color: rgb(5, 233, 5); bottom: 0; margin-left: -20px !important;">
             <span class="visually-hidden">New alerts</span>
@@ -421,7 +418,7 @@
           </div>
         </div> -->
         <div class="bot-message">
-          <img id="agentImage2" class="message-image" src="/agent.png" class="agentImage">
+          <img class="message-image" src="/agent.png">
 
           <div class="messageWrapper">
             <span class="botname-message" id="OpenedTime2"></span>
@@ -806,17 +803,6 @@
       responseDiv.scrollTop = responseDiv.scrollHeight;
     }
   </script>
-  <script>
-    let agentImage = "/agent.png"; //  /agent.png , /robot.png
-    let userImage = "/user.webp";
-
-    let imgElement = document.getElementById('agentImage1');
-    let imgElement2 = document.getElementById('agentImage2');
-
-    imgElement.src = agentImage;
-    imgElement2.src = agentImage; 
-</script>
-  <script src="../scripts/colorChange.js" type="text/javascript"></script>
 </body>
 
 </html>
