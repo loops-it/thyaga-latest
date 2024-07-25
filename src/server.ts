@@ -79,6 +79,8 @@ import multer from "multer";
 import { chatTranscribeAudio } from "./controllers/TranscribeAudio";
 import { VoiceSipTrunkBotResponce } from "./controllers/VoiceSipTrunk";
 import { chatResponseSip } from "./controllers/chatControllerSipTrunk";
+import { CustomizeBotView } from "./controllers/CustomizeBotView";
+import { customizeBot } from "./controllers/CustomizeBot";
 const app = express();
 app.use(cookieParser());
 // Set up view engine
