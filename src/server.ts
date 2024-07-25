@@ -79,6 +79,8 @@ import multer from "multer";
 import { chatTranscribeAudio } from "./controllers/TranscribeAudio";
 import { customizeBot } from "./controllers/CustomizeBot";
 import { CustomizeBotView } from "./controllers/CustomizeBotView";
+import { VoiceSipTrunkBotResponce } from "./controllers/VoiceSipTrunk";
+import { chatResponseSip } from "./controllers/chatControllerSipTrunk";
 const app = express();
 app.use(cookieParser());
 // Set up view engine
@@ -117,6 +119,7 @@ app.use("/bot", indexRouter);
 app.use("/voice-bot", indexRouter);
 app.use("/live-agent", indexRouter);
 app.use("/voice-and-chat-bot", indexRouter);
+app.use("/voice-call", indexRouter);
 
 
 
@@ -124,6 +127,7 @@ app.use("/voice-and-chat-bot", indexRouter);
 app.post('/recording-start', upload.single('audio'), chatTranscribeAudio);
 
 app.post("/api/chat-response", chatResponse);
+app.post("/chat-response-sip", chatResponseSip);
 app.post("/voice-chat-response", chatAudioResponse);
 app.post("/live-chat-agent", liveChat);
 app.post("/live-chat-user", liveChatUser);
@@ -138,9 +142,10 @@ app.get("/edit-document", adminLogged, editDocument);
 
 
 app.get("/view-documents-all", adminLogged, CustomizeBotView);
-app.post("/bot-customization", adminLogged, customizeBot);
+app.post("/bot-customization", upload.single('file'), customizeBot);
 
 
+app.post("/voice-call-bot", VoiceSipTrunkBotResponce);
 
 
 

@@ -635,7 +635,7 @@ document
       try {
         // Clear the input
         questionInput.value = "";
-        const response = await fetch("/api/chat-response", {
+        const response = await fetch("/chat-response-sip", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -934,7 +934,7 @@ async function startRecording() {
 
         let chatId = localStorage.getItem("chatId");
 
-        const responseAnswer = await fetch("/voice-chat-response", {
+        const responseAnswer = await fetch("/chat-response-sip", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -27,8 +27,13 @@ router.get('/voice-and-chat-bot', async (req: Request, res: Response) => {
     res.render('intergratedBot',{questions: questions});
 });
 
-router.get('/bot-customization', async (req: Request, res: Response) => {
-    res.render('customization');
+// router.get('/bot-customization', async (req: Request, res: Response) => {
+//     res.render('customization');
+// });
+
+router.get('/voice-call', async (req: Request, res: Response) => {
+    const questions  = await QuickQuestion.findAll({});
+    res.render('IntergratedBotCall',{questions: questions});
 });
 
 export default router;
