@@ -77,8 +77,6 @@ import { Op } from "sequelize";
 import { chatAudioResponse } from "./controllers/chatControllerAudio";
 import multer from "multer";
 import { chatTranscribeAudio } from "./controllers/TranscribeAudio";
-import { customizeBot } from "./controllers/CustomizeBot";
-import { CustomizeBotView } from "./controllers/CustomizeBotView";
 import { VoiceSipTrunkBotResponce } from "./controllers/VoiceSipTrunk";
 import { chatResponseSip } from "./controllers/chatControllerSipTrunk";
 const app = express();
@@ -120,9 +118,6 @@ app.use("/voice-bot", indexRouter);
 app.use("/live-agent", indexRouter);
 app.use("/voice-and-chat-bot", indexRouter);
 app.use("/voice-call", indexRouter);
-
-
-
 
 app.post('/recording-start', upload.single('audio'), chatTranscribeAudio);
 
@@ -442,7 +437,5 @@ app.post("/refresh-live-chat-inner", refreshLiveChatInner);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-
-console.log(`Server is running on port ${PORT}`);
-
+  console.log(`Server is running on port ${PORT}`);
 });

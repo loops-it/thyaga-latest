@@ -9,135 +9,109 @@ import ChatTimer from '../../models/ChatTimer';
 import Agent from '../../models/Agent';
 import BotChats from '../../models/BotChats';
 
+import nodemailer from 'nodemailer';
+
 
 interface UserDecodedToken extends JwtPayload {
-  id: string;
-  
+    id: string;
+
 }
- 
+
 
 export const switchToAgent = async (req: Request, res: Response, next: NextFunction) => {
-    const {chatId} = req.body
+    const { chatId } = req.body
+
+
+    //email function
+
+
+    // Create a nodemailer transporter
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+            user: "loopssolutionmail@gmail.com",
+            pass: "jvtimyutrbtucxep",
+
+
+
+        }
+    });
+
+    // Email options
+    const mailOptions = {
+        from: 'thinupawani@gmail.com',
+        to: 'uthzara@gmail.com',
+        subject: 'Switch to Agent Notification',
+        text: `Your chat with ID ${chatId} has been switched to an agent.Please Login to the dahsboard as a Live agent !`
+    };
+
+    // Send the email
     try {
-        const onlineUser = await User.findOne({ where: { online_status: 'online',status: 'active',user_role: 2 } });
-        if(onlineUser){
-            const chat_header_exist = await ChatHeader.findOne({ where: { message_id: chatId } });
-            const queued_chats  = await ChatHeader.count({
+        await transporter.sendMail(mailOptions);
+        // res.json({ status: "success" });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        // res.status(500).json({ status: "error", message: "Failed to send email", error: error.message });
+    }
+
+
+
+try {
+    const onlineUser = await User.findOne({ where: { online_status: 'online', status: 'active', user_role: 2 } });
+    if (onlineUser) {
+        const chat_header_exist = await ChatHeader.findOne({ where: { message_id: chatId } });
+        const queued_chats = await ChatHeader.count({
+            where: {
+                "agent": "unassigned",
+                "status": "live",
+            },
+        });
+        if (chat_header_exist) {
+            res.json({ status: "success", queued_chats })
+        } else {
+            const chat_main = await BotChats.findOne({
                 where: {
-                    "agent" : "unassigned",
-                    "status" : "live",
-                },
+                    message_id: chatId
+                }
             });
-            if(chat_header_exist){
-                res.json({ status: "success",queued_chats }) 
-            }else{
-                const chat_main = await BotChats.findOne({
-                    where: {
-                      message_id: chatId
-                    }
-                });
-                const chats = await BotChats.findAll({
-                    where: {
-                      message_id: chatId
-                    },
-                    order: [['id', 'ASC']]
-                });
-                if(chat_main){
-                    await ChatHeader.create({
+            const chats = await BotChats.findAll({
+                where: {
+                    message_id: chatId
+                },
+                order: [['id', 'ASC']]
+            });
+            if (chat_main) {
+                await ChatHeader.create({
                     message_id: chatId,
                     language: chat_main.language,
                     status: "live",
                     agent: "unassigned",
                 });
-                }
-    
-                for (var c = 0; c < chats.length; c++) {
-        
-                    await LiveChat.create({
-                      message_id: chatId,
-                      sent_by: chats[c].message_sent_by,
-                      message: chats[c].message,
-              
-                    })
-                }
-    
-                await BotChats.destroy({
-                    where: {
-                      message_id: chatId
-                    }
-                })
-                res.json({ status: "success",queued_chats:queued_chats }) 
-            }   
-        }
-       else{
-        res.json({ status: "fail"}) 
-       }
-    }
-    catch (error) {
-        console.error("Error processing question:", error);
-        res.status(500).json({ error: "An error occurred." });
-    }
-};
-
-export const liveChat = async (req: Request, res: Response, next: NextFunction) => {
-const {chatId} = req.body
-try {
-    
-    const chat_header_result  = await ChatHeader.findOne({
-        where: {
-            "message_id" : chatId
-        },
-      });
-    const chat_body_result = await LiveChat.findOne({
-        where: {
-            message_id: chatId,
-            sent_by: 'agent',
-            sent_to_user: 'no',
-        },
-        order: [['id', 'DESC']],
-    });
-    if(chat_header_result){
-        let agent_name;
-        let profile_picture;
-        let agent_message;
-        const agent_details = await Agent.findOne({
-            where: {
-                user_id: chat_header_result.agent,
             }
-        });
-        if (agent_details) {
-            agent_name = agent_details.name;
-            profile_picture = agent_details.profile_picture;
-          }
-          else{
-            agent_name = null;
-            profile_picture = null;
-          }
-          
-        if (chat_body_result) {
-            agent_message = chat_body_result.message;
-            await LiveChat.update(
-                { sent_to_user:"yes"},
-                { where: { id: chat_body_result.id } }
-            );
-        }
-        else {
-            agent_message = null;
-          }
-          let agent_id = chat_header_result.agent;
-          let chat_status = chat_header_result.status;
-          let is_time_out = chat_header_result.is_time_out;
-          res.json({ agent_id, chat_status, agent_message, agent_name, profile_picture, is_time_out });
-    }
-    else{
-        let agent_id = null;
-        let chat_status = null;
-        let agent_message = null;
-        let agent_name = null;
-        let profile_picture = null;
-        let is_time_out = null;
 
-          res.json({ agent_id, chat_status, agent_message, agent_name, profile_picture, is_time_out });
+            for (var c = 0; c < chats.length; c++) {
+
+                await LiveChat.create({
+                    message_id: chatId,
+                    sent_by: chats[c].message_sent_by,
+                    message: chats[c].message,
+                    time: ''
+
+                })
+            }
+
+            await BotChats.destroy({
+                where: {
+                    message_id: chatId
+                }
+            })
+            res.json({ status: "success", queued_chats: queued_chats })
+        }
+    }
+    else {
+        res.json({ status: "fail" })
     }
 }
 catch (error) {
@@ -146,21 +120,88 @@ catch (error) {
 }
 };
 
+export const liveChat = async (req: Request, res: Response, next: NextFunction) => {
+    const { chatId } = req.body
+    try {
+
+        const chat_header_result = await ChatHeader.findOne({
+            where: {
+                "message_id": chatId
+            },
+        });
+        const chat_body_result = await LiveChat.findOne({
+            where: {
+                message_id: chatId,
+                sent_by: 'agent',
+                sent_to_user: 'no',
+            },
+            order: [['id', 'DESC']],
+        });
+        if (chat_header_result) {
+            let agent_name;
+            let profile_picture;
+            let agent_message;
+            const agent_details = await Agent.findOne({
+                where: {
+                    user_id: chat_header_result.agent,
+                }
+            });
+            if (agent_details) {
+                agent_name = agent_details.name;
+                profile_picture = agent_details.profile_picture;
+            }
+            else {
+                agent_name = null;
+                profile_picture = null;
+            }
+
+            if (chat_body_result) {
+                agent_message = chat_body_result.message;
+                await LiveChat.update(
+                    { sent_to_user: "yes" },
+                    { where: { id: chat_body_result.id } }
+                );
+            }
+            else {
+                agent_message = null;
+            }
+            let agent_id = chat_header_result.agent;
+            let chat_status = chat_header_result.status;
+            let is_time_out = chat_header_result.is_time_out;
+            res.json({ agent_id, chat_status, agent_message, agent_name, profile_picture, is_time_out });
+        }
+        else {
+            let agent_id = null;
+            let chat_status = null;
+            let agent_message = null;
+            let agent_name = null;
+            let profile_picture = null;
+            let is_time_out = null;
+
+            res.json({ agent_id, chat_status, agent_message, agent_name, profile_picture, is_time_out });
+        }
+    }
+    catch (error) {
+        console.error("Error processing question:", error);
+        res.status(500).json({ error: "An error occurred." });
+    }
+};
+
 
 export const liveChatUser = async (req: Request, res: Response, next: NextFunction) => {
-    const {chatId,user_message, language} = req.body
+    const { chatId, user_message, language } = req.body
     try {
-        
+
         const chat_header_exist = await ChatHeader.findOne({ where: { message_id: chatId } });
-        if(chat_header_exist){
+        if (chat_header_exist) {
             await LiveChat.create({
                 message_id: chatId,
                 sent_by: 'customer',
                 message: user_message,
-                viewed_by_agent : 'no'
-              })
+                viewed_by_agent: 'no'
+            })
         }
-        else{
+        else {
             await ChatHeader.create({
                 message_id: chatId,
                 language: language,
@@ -171,22 +212,22 @@ export const liveChatUser = async (req: Request, res: Response, next: NextFuncti
                 message_id: chatId,
                 sent_by: 'customer',
                 message: user_message,
-                viewed_by_agent : 'no'
-              })
+                viewed_by_agent: 'no'
+            })
         }
-        res.json({ status : "success" });
+        res.json({ status: "success" });
     }
     catch (error) {
         console.error("Error processing question:", error);
         res.status(500).json({ error: "An error occurred." });
     }
-    };
+};
 
 export const saveRating = async (req: Request, res: Response, next: NextFunction) => {
-    const {ratingValue,feedbackMessage,chatId} = req.body
+    const { ratingValue, feedbackMessage, chatId } = req.body
     try {
         await ChatHeader.update(
-            { rating:ratingValue,feedback:feedbackMessage,},
+            { rating: ratingValue, feedback: feedbackMessage, },
             { where: { message_id: chatId } }
         );
         res.json({ status: "success" })
@@ -198,10 +239,10 @@ export const saveRating = async (req: Request, res: Response, next: NextFunction
 };
 
 export const chatUserClose = async (req: Request, res: Response, next: NextFunction) => {
-    const {chatId} = req.body
+    const { chatId } = req.body
     try {
         await ChatHeader.update(
-            { status:"closed"},
+            { status: "closed" },
             { where: { message_id: chatId } }
         );
         res.json({ status: "success" })
@@ -212,10 +253,10 @@ export const chatUserClose = async (req: Request, res: Response, next: NextFunct
     }
 };
 export const chatTimeOut = async (req: Request, res: Response, next: NextFunction) => {
-    const {chatId} = req.body
+    const { chatId } = req.body
     try {
         await ChatHeader.update(
-            { status:"closed",is_time_out:"yes"},
+            { status: "closed", is_time_out: "yes" },
             { where: { message_id: chatId } }
         );
         res.json({ status: "success" })
@@ -227,27 +268,27 @@ export const chatTimeOut = async (req: Request, res: Response, next: NextFunctio
 };
 
 export const directConnectAgent = async (req: Request, res: Response, next: NextFunction) => {
-    const {language} = req.body
+    const { language } = req.body
     try {
         let chatId = req.body.chatId || "";
         const currentDate = new Date();
-            const year = currentDate.getFullYear();
-            const month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
-            const day = ('0' + currentDate.getDate()).slice(-2);
-            const hours = ('0' + currentDate.getHours()).slice(-2);
-            const minutes = ('0' + currentDate.getMinutes()).slice(-2);
-            const seconds = ('0' + currentDate.getSeconds()).slice(-2);
+        const year = currentDate.getFullYear();
+        const month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+        const day = ('0' + currentDate.getDate()).slice(-2);
+        const hours = ('0' + currentDate.getHours()).slice(-2);
+        const minutes = ('0' + currentDate.getMinutes()).slice(-2);
+        const seconds = ('0' + currentDate.getSeconds()).slice(-2);
 
-            const prefix = 'chat';
-            chatId = `${prefix}_${year}${month}${day}_${hours}${minutes}${seconds}`;
-        
+        const prefix = 'chat';
+        chatId = `${prefix}_${year}${month}${day}_${hours}${minutes}${seconds}`;
+
         await ChatHeader.create({
             message_id: chatId,
             language: language,
             status: "live",
             agent: "unassigned",
         });
-        res.json({ status: "success",chatId: chatId })
+        res.json({ status: "success", chatId: chatId })
     }
     catch (error) {
         console.error("Error processing question:", error);

@@ -250,13 +250,11 @@ function createMessageDiv(role, content) {
   return messageDiv;
 }
 
-
-
 // Function - handle image based on role
 function createMessageImage(role) {
   const image = document.createElement("img");
   image.classList.add("message-image");
-  image.src = role === "user" ? userImage : agentImage;
+  image.src = role === "user" ? "/user.webp" : "/agent.png";
   return image;
 }
 
@@ -572,7 +570,7 @@ function appendLanguageMessage(content) {
 
   const image = document.createElement("img");
   image.classList.add("message-image");
-  image.src = agentImage;
+  image.src = "/agent.png";
 
   messageDiv.innerHTML = `<div class="messageWrapper">
       <span class="botname-message">${formattedTime}</span>

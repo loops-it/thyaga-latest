@@ -23,9 +23,6 @@
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
     <style>
-        :root {
-            --primary-color: #1C73D4;
-        }
         .container {
             width: 360px;
             position: absolute;
@@ -57,7 +54,7 @@
             padding: 10px;
             border-top-left-radius: 0px;
             font-size: 12px;
-            background-color:  var(--primary-color);
+            background-color: #1C73D4;
             color: #fff !important;
             display: flex;
             flex-direction: column;
@@ -116,7 +113,7 @@
             padding: 10px;
             border-top-left-radius: 0px;
             font-size: 12px;
-            background-color:  var(--primary-color);
+            background-color: #1C73D4;
             color: #fff !important;
             display: flex;
             flex-direction: column;
@@ -182,7 +179,7 @@
             bottom: 10px;
             background-color: transparent;
             border-radius: 100%;
-            color:  var(--primary-color);
+            color: #1C73D4;
             /* color: #BFBFBF; */
             padding: 10px;
             font-size: 20px;
@@ -191,13 +188,13 @@
             width: 40px;
             height: 40px;
             margin-right: 5px;
-            /* border: solid 1px  var(--primary-color); */
+            /* border: solid 1px #1C73D4; */
         }
 
         .recordButton {
             background-color: transparent;
             border-radius: 100%;
-            color:  var(--primary-color);
+            color: #1C73D4;
             padding: 10px;
             font-size: 20px;
             line-height: 20px;
@@ -228,7 +225,7 @@
         }
 
         .chat-header {
-            background-color:  var(--primary-color);
+            background-color: #1C73D4;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }
@@ -261,7 +258,7 @@
             font-family: "Poppins", sans-serif;
             font-size: 12px;
             border-radius: 15px;
-            background-color:  var(--primary-color);
+            background-color: #1C73D4;
             border: none;
             color: #fff;
             width: 100%;
@@ -394,7 +391,7 @@
         }
 
         .quickQuestionButton {
-            background-color:  var(--primary-color);
+            background-color: #1C73D4;
             border-radius: 5px;
             border: none;
             color: #fff;
@@ -423,7 +420,7 @@
         }
 
         .powerdTextBox span {
-            color:  var(--primary-color);
+            color: #1C73D4;
             font-weight: 600;
         }
 
@@ -431,7 +428,7 @@
             background-color: #fff;
             border-radius: 5px;
             border: none;
-            color:  var(--primary-color);
+            color: #1C73D4;
             font-weight: 400;
             font-size: 12px;
             font-family: "Poppins", sans-serif;
@@ -441,7 +438,7 @@
 
         .btnNotoClose,
         .btnYesToClose {
-            background-color:  var(--primary-color);
+            background-color: #1C73D4;
             border-radius: 5px;
             border: none;
             color: #fff;
@@ -456,7 +453,7 @@
 
         .star-rating-form {
             width: 280px;
-            border: solid 1px  var(--primary-color);
+            border: solid 1px #1C73D4;
         }
 
         .rating-icon {
@@ -468,7 +465,7 @@
             background-color: #fff;
             border-radius: 5px;
             border: none;
-            color:  var(--primary-color);
+            color: #1C73D4;
             font-weight: 400;
             font-size: 12px;
             font-family: "Poppins", sans-serif;
@@ -492,7 +489,7 @@
         <div class="d-flex chat-header w-100 py-2 text-center justify-content-between align-items-center">
             <div class="d-flex flex-row">
                 <div class="d-flex ps-3 pe-2 py-1 position-relative">
-                    <img id="agentImage1" src="/agent.png" alt="" class="" style="height: 60px; width: auto;">
+                    <img src="/agent.png" alt="" class="" style="height: 60px; width: auto;">
                     <span class="position-absolute start-100 translate-middle p-1 rounded-circle"
                         style="background-color: rgb(5, 233, 5); bottom: 0; margin-left: -20px !important;">
                         <span class="visually-hidden">New alerts</span>
@@ -511,7 +508,7 @@
                 <div class="d-flex justify-content-center align-items-center">
                 </div>
                 <div class="bot-message">
-                    <img id="agentImage2" class="message-image" src="/agent.png">
+                    <img class="message-image" src="/agent.png">
 
                     <div class="messageWrapper">
                         <span class="botname-message" id="OpenedTime1">ChatBot</span>
@@ -544,7 +541,7 @@
                     </div>
                 </div>
                 <div class="bot-message">
-                    <img id="agentImage3" class="message-image" src="/agent.png">
+                    <img class="message-image" src="/agent.png">
 
                     <div class="messageWrapper">
                         <span class="botname-message" id="OpenedTime2"></span>
@@ -597,6 +594,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
+
     <script>
         var quickQuestions = [];
 <% for (var i = 0; i < questions.length; i++) { %>
@@ -670,8 +668,6 @@
     <script src="../scripts/VoiceBotScript.js" type="text/javascript"></script>
     <script src="../scripts/singlish.js" type="text/javascript"></script>
     <script src="../scripts/tanglish.js" type="text/javascript"></script>
-    <script src="../scripts/colorChange.js" type="text/javascript"></script>
-
 </body>
 
 </html>
