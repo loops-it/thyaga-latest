@@ -81,6 +81,9 @@ import { VoiceSipTrunkBotResponce } from "./controllers/VoiceSipTrunk";
 import { chatResponseSip } from "./controllers/chatControllerSipTrunk";
 import { CustomizeBotView } from "./controllers/CustomizeBotView";
 import { customizeBot } from "./controllers/CustomizeBot";
+
+import Customize from '../models/Customize';
+
 const app = express();
 app.use(cookieParser());
 // Set up view engine
@@ -140,8 +143,33 @@ app.get("/upload-documents", adminLogged, (req: Request, res: Response) => {
 app.get("/edit-document", adminLogged, editDocument);
 
 
-app.get("/view-documents-all", adminLogged, CustomizeBotView);
-app.post("/bot-customization", upload.single('file'), customizeBot);
+// app.get("/view-documents-all", adminLogged, CustomizeBotView);
+
+// app.get('/view-documents-all', adminLogged, async (req, res) => {
+//   try {
+//       const [customizations] = await db.query('SELECT bot_Name, color, select_image FROM customize');
+//       res.render('customize', { customizations });
+//   } catch (err) {
+//       console.error(err);
+//       res.status(500).send('Server Error');
+//   }
+// });
+
+
+
+app.use(express.static(path.join(__dirname, "public")));
+
+
+app.get("/view-documents-all", adminLogged, (req: Request, res: Response) => {
+  res.render("customization");
+});
+
+
+
+// Define the route for customization
+app.post('/view-documents-all', customizeBot);
+
+app.post("/bot-customization", handleFileUpload , customizeBot);
 
 
 app.post("/voice-call-bot", VoiceSipTrunkBotResponce);
