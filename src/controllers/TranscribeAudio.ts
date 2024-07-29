@@ -10,6 +10,15 @@ const speech = require("@google-cloud/speech");
 const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
 import multer from "multer";
 import { OperationUsage } from "@pinecone-database/pinecone/dist/data/types";
+import { AudioContext } from 'node-web-audio-api';
+import * as fs from 'fs';
+import * as path from 'path';
+import { Readable } from 'stream';
+
+
+
+
+
 const upload = multer();
 
 // ============= api keys import ====================
@@ -52,7 +61,6 @@ const clientGoogle = new speech.SpeechClient({
 const textToSpeachClient = new TextToSpeechClient({
   credentials: serviceAccountKey,
 });
-
 
 // ==============  interfaces ======================
 interface RequestWithChatId extends ExpressRequest {
@@ -102,6 +110,7 @@ interface ScoredPineconeRecord<T> {
 interface RequestBody {
   voiceID?: string;
   language?: string;
+  chatStatus?: string;
 }
 
 // Initialize the in-memory stores
@@ -109,7 +118,11 @@ const chatHistoryMemory: ChatHistory = {};
 const systemMessages: SystemMessages = {};
 
 // Save message to the in-memory store
-const saveMessage = (chatId: string, role: "system" | "user" | "assistant", content: string): void => {
+const saveMessage = (
+  chatId: string,
+  role: "system" | "user" | "assistant",
+  content: string
+): void => {
   const timestamp = new Date();
   if (role === "system") {
     systemMessages[chatId] = { role, content, timestamp };
@@ -131,18 +144,27 @@ const getChatHistory = (chatId: string): ChatCompletionMessageParam[] => {
   return history;
 };
 
+// Clear chat history and system messages from the in-memory store
+const clearChatMemory = (chatId: string): void => {
+  delete chatHistoryMemory[chatId];
+  delete systemMessages[chatId];
+  console.log(`Memory cleared for chatId ${chatId}`);
+};
+
 // Generate unique chat ID
 const generateChatId = (): string => {
   const currentDate = new Date();
   const prefix = "chat";
-  const formattedDate = currentDate.toISOString().replace(/[-:.]/g, '');
+  const formattedDate = currentDate.toISOString().replace(/[-:.]/g, "");
   return `${prefix}_${formattedDate}`;
 };
 
 // Translate text to English
 const translateToEnglish = async (text: string): Promise<string> => {
   const [translationsToEng] = await translate.translate(text, "en");
-  return Array.isArray(translationsToEng) ? translationsToEng.join(", ") : translationsToEng;
+  return Array.isArray(translationsToEng)
+    ? translationsToEng.join(", ")
+    : translationsToEng;
 };
 
 // Get completion from OpenAI
@@ -152,29 +174,53 @@ const getCompletion = async (chatId: string) => {
     model: "gpt-3.5-turbo",
     messages: history,
     max_tokens: 200,
-    temperature: 0
+    temperature: 0,
   });
   return completion.choices[0].message.content;
 };
 
 // Transcribe audio using Google Cloud
-const transcribeAudio = async (audioBuffer: Buffer, languageCode: string): Promise<string> => {
+const transcribeAudio = async (
+  audioBuffer: Buffer,
+  languageCode: string
+): Promise<string> => {
   const request = {
     audio: { content: audioBuffer.toString("base64") },
-    config: { encoding: "MP3", sampleRateHertz: 16000, languageCode: languageCode }
+    config: {
+      encoding: "MP3",
+      sampleRateHertz: 16000,
+      languageCode: languageCode,
+    },
   };
   const [response] = await clientGoogle.recognize(request);
-  return response.results.map((result: { alternatives: { transcript: any; }[]; }) => result.alternatives[0].transcript).join("\n");
+  return response.results
+    .map(
+      (result: { alternatives: { transcript: any }[] }) =>
+        result.alternatives[0].transcript
+    )
+    .join("\n");
 };
 
 // Translate response to target language
-const translateToLanguage = async (text: string, targetLanguage: string): Promise<string> => {
-  const [translationsToLanguage] = await translate.translate(text, targetLanguage);
-  return Array.isArray(translationsToLanguage) ? translationsToLanguage.join(", ") : translationsToLanguage;
+const translateToLanguage = async (
+  text: string,
+  targetLanguage: string
+): Promise<string> => {
+  const [translationsToLanguage] = await translate.translate(
+    text,
+    targetLanguage
+  );
+  return Array.isArray(translationsToLanguage)
+    ? translationsToLanguage.join(", ")
+    : translationsToLanguage;
 };
 
 // Generate context for system prompt
-const generateContext = async (completionQuestion: string, category: string, kValue: number): Promise<string> => {
+const generateContext = async (
+  completionQuestion: string,
+  category: string,
+  kValue: number
+): Promise<string> => {
   const embedding = await openai.embeddings.create({
     model: "text-embedding-ada-002",
     input: completionQuestion,
@@ -186,14 +232,19 @@ const generateContext = async (completionQuestion: string, category: string, kVa
   const queryResponse = await namespace.query({
     vector: embedding.data[0].embedding,
     topK: kValue,
-    filter: category === "Unavailable" ? undefined : { Category: { $eq: category } },
+    filter:
+      category === "Unavailable" ? undefined : { Category: { $eq: category } },
     includeMetadata: true,
   });
 
-  return queryResponse.matches.map(match => {
-    const metadata = match.metadata as RecordMetadata;
-    return `Title: ${metadata.Title ?? "N/A"}, \n Category: ${metadata.Category ?? "N/A"} \n Content: ${metadata.Text ?? "N/A"} \n \n`;
-  }).join("\n");
+  return queryResponse.matches
+    .map((match) => {
+      const metadata = match.metadata as RecordMetadata;
+      return `Title: ${metadata.Title ?? "N/A"}, \n Category: ${
+        metadata.Category ?? "N/A"
+      } \n Content: ${metadata.Text ?? "N/A"} \n \n`;
+    })
+    .join("\n");
 };
 
 // Determine category of the question
@@ -225,111 +276,234 @@ const determineCategory = async (question: string): Promise<string> => {
   return categorySelection.choices[0].text.trim();
 };
 
+
+const mp3FilePath = path.join(__dirname, '../public/melodyloops-bright-shiny-morning.mp3');
+console.log("file path mp3 : ", mp3FilePath)
+
+const audioContext = new AudioContext();
+let source: AudioBufferSourceNode | null = null;
+let isPlaying = false;
+
+// play the MP3 file
+const playAudio = () => {
+  if (isPlaying) {
+      console.log('Audio is already playing.');
+      return;
+  }
+
+  // Create a readable stream from the file
+  const fileStream = fs.createReadStream(mp3FilePath);
+
+  // Read MP3 file into buffer
+  const mp3Buffer: Buffer[] = [];
+  fileStream.on('data', (chunk: Buffer) => mp3Buffer.push(chunk));
+  fileStream.on('end', () => {
+      const buffer = Buffer.concat(mp3Buffer);
+
+      // Convert Buffer to ArrayBuffer
+      const arrayBuffer = Uint8Array.from(buffer).buffer;
+
+      audioContext.decodeAudioData(arrayBuffer)
+          .then((audioBuffer: AudioBuffer) => {
+              // Stop and disconnect previous source if it exists
+              if (source) {
+                  source.stop();
+                  source.disconnect();
+              }
+
+              source = audioContext.createBufferSource();
+              source.buffer = audioBuffer;
+              source.connect(audioContext.destination);
+              source.start(0);
+              isPlaying = true;
+              console.log('Playback started.');
+          })
+          .catch((err: Error) => {
+              console.error('Error decoding audio:', err);
+          });
+  });
+};
+
+//stop the MP3 file
+const stopAudio = () => {
+  if (isPlaying && source) {
+      try {
+          source.stop();
+          source.disconnect();
+      } catch (err) {
+          console.error('Error stopping audio:', err);
+      } finally {
+          isPlaying = false;
+          source = null; 
+          console.log('Playback stopped.');
+      }
+  } else {
+      console.log('No audio is currently playing.');
+  }
+};
+
 // Main handler function
 export const chatTranscribeAudio = async (
   req: RequestWithChatId,
   res: Response
 ) => {
+
+  playAudio();
   const data = req.body as RequestBody;
-  console.log(data);
+  console.log("DATA  :  ", data);
 
   if (!data) {
     return res.status(400).send("Request body is missing.");
   }
 
-  const userChatId: string = data.voiceID && data.voiceID !== "null" ? data.voiceID : generateChatId();
+  const userChatId: string =
+    data.voiceID && data.voiceID !== "null" ? data.voiceID : generateChatId();
   const language = data.language || "English";
-  const languageCode = language === "Sinhala" ? "si-LK" : language === "Tamil" ? "ta-IN" : "en-US";
-  const voiceName = language === "Sinhala" ? "si-LK-Standard-A" : language === "Tamil" ? "ta-IN-Standard-C" : "en-GB-Standard-A";
+  const languageCode =
+    language === "Sinhala" ? "si-LK" : language === "Tamil" ? "ta-IN" : "en-US";
+  const voiceName =
+    language === "Sinhala"
+      ? "si-LK-Standard-A"
+      : language === "Tamil"
+      ? "ta-IN-Standard-C"
+      : "en-GB-Standard-A";
 
-  if (!req.file) {
-    return res.status(400).send("No audio file uploaded.");
-  }
 
-  try {
-    const audioBuffer = req.file.buffer;
-    const transcribedText = await transcribeAudio(audioBuffer, languageCode);
-    if (!transcribedText) {
-      const errorResponse = "Sorry, I couldn't hear that. Could you please repeat your message?";
-      saveMessage(userChatId, "system", "You are a helpful assistant. If the user cannot be heard, ask them to repeat their message.");
-      saveMessage(userChatId, "assistant", errorResponse);
+  // if chat closed
+  if (data.chatStatus === "chatClosed") {
+    console.log("userChatId : ", userChatId);
+    console.log("Status:", data.chatStatus);
+
+    const historyBefore = getChatHistory(userChatId);
+    console.log("Before clearing memory, history:", historyBefore);
+
+    // await BotChats.create({
+    //   message_id: userChatId,
+    //   language: language,
+    //   message: transcribedText,
+    //   message_sent_by: "customer",
+    //   viewed_by_admin: "no",
+    // });
+
+    // await BotChats.create({
+    //   message_id: userChatId,
+    //   language: language,
+    //   message: translatedResponse,
+    //   message_sent_by: "bot",
+    //   viewed_by_admin: "no",
+    // });
+
+    clearChatMemory(userChatId);
+
+    const historyAfter = getChatHistory(userChatId);
+    console.log("After clearing memory, history:", historyAfter);
+
+    return res.status(200).send("Chat closed and memory cleared.");
+  } else {
+    console.log("chat ongoing : ", data.chatStatus);
+
+    if (!req.file) {
+      return res.status(400).send("No audio file uploaded.");
+    }
+    try {
+      const audioBuffer = req.file.buffer;
+      const transcribedText = await transcribeAudio(audioBuffer, languageCode);
+      if (!transcribedText) {
+        const errorResponse =
+          "Sorry, I couldn't hear that. Could you please repeat your message?";
+        saveMessage(
+          userChatId,
+          "system",
+          "You are a helpful assistant. If the user cannot be heard, ask them to repeat their message."
+        );
+        saveMessage(userChatId, "assistant", errorResponse);
+
+        const [response] = await textToSpeachClient.synthesizeSpeech({
+          input: { text: errorResponse },
+          voice: { languageCode: languageCode, name: voiceName },
+          audioConfig: { audioEncoding: "MP3" },
+        });
+
+        stopAudio();
+        return res.status(200).json({
+          userText: transcribedText,
+          chatId: userChatId,
+          answer: errorResponse,
+          audioSrc: `data:audio/mp3;base64,${response.audioContent.toString(
+            "base64"
+          )}`,
+        });
+      }
+
+      const translatedQuestion =
+        language === "English"
+          ? transcribedText
+          : await translateToEnglish(transcribedText);
+
+      const systemPrompt = `You are a helpful assistant and you are friendly. If the user greets you, respond warmly. Your name is Thyaga GPT. Answer user questions only based on the given context: {context}. Your answer must be less than 180 tokens. If the user asks for information like your email or address, provide the Thyaga email and address. If your answer has a list, format it as a numbered list. For specific questions about available categories (e.g., "What are the choices available in Thyaga?"), provide the relevant categories as listed in the context. If the user asks about Supermarkets using the Thyaga voucher, respond with the information you have available, but clarify if specific details aren't listed. If the user asks for merchants generically, list the merchant types and ask to specify a category. For any questions not relevant to the context, If the user question is not relevant to the context, just say "Sorry, I couldn't find any information. Would you like to chat with a live agent?". Do NOT make up any answers or provide information not relevant to the context using public information.`;
+
+      saveMessage(userChatId, "system", systemPrompt);
+      saveMessage(userChatId, "user", translatedQuestion);
+
+      const questionRephrasePrompt = `As a customer service assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevant keywords from the CHAT HISTORY. ---------- CHAT HISTORY: {${JSON.stringify(
+        chatHistoryMemory[userChatId]?.slice(-5) ?? []
+      )}} ---------- FOLLOWUP QUESTION: {${translatedQuestion}} ---------- Standalone question:`;
+
+      const completionQuestion = await openai.completions.create({
+        model: "gpt-3.5-turbo-instruct",
+        prompt: questionRephrasePrompt,
+        max_tokens: 50,
+        temperature: 0,
+      });
+      console.log(
+        "Standalone question : ",
+        completionQuestion.choices[0].text.trim()
+      );
+
+      const category = await determineCategory(
+        completionQuestion.choices[0].text.trim()
+      );
+      console.log("category : ", category);
+
+      const context = await generateContext(
+        completionQuestion.choices[0].text.trim(),
+        category,
+        4
+      );
+      saveMessage(
+        userChatId,
+        "system",
+        systemPrompt.replace("{context}", context)
+      );
+
+      const assistantResponse = await getCompletion(userChatId);
+      console.log("Assistant response : ", assistantResponse);
+      const translatedResponse =
+        language === "English"
+          ? assistantResponse
+          : await translateToLanguage(assistantResponse || "", language);
+      saveMessage(userChatId, "assistant", translatedResponse || "");
 
       const [response] = await textToSpeachClient.synthesizeSpeech({
-        input: { text: errorResponse },
+        input: { text: translatedResponse },
         voice: { languageCode: languageCode, name: voiceName },
         audioConfig: { audioEncoding: "MP3" },
       });
 
-      return res.status(200).json({ 
-        userText: transcribedText, 
-        chatId: userChatId, 
-        answer: errorResponse,
-        audioSrc: `data:audio/mp3;base64,${response.audioContent.toString("base64")}`,
+      stopAudio();
+      res.status(200).json({
+        userText: translatedQuestion,
+        chatId: userChatId,
+        answer: translatedResponse,
+        audioSrc: `data:audio/mp3;base64,${response.audioContent.toString(
+          "base64"
+        )}`,
       });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: transcribedText,
-      message_sent_by: "customer",
-      viewed_by_admin: "no",
-    });
-
-    const translatedQuestion = language === "English" ? transcribedText : await translateToEnglish(transcribedText);
-
-    const systemPrompt = `You are a helpful assistant and you are friendly. If the user greets you, respond warmly. Your name is Thyaga GPT. Answer user questions only based on the given context: {context}. Your answer must be less than 180 tokens. If the user asks for information like your email or address, provide the Thyaga email and address. If your answer has a list, format it as a numbered list. For specific questions about available categories (e.g., "What are the choices available in Thyaga?"), provide the relevant categories as listed in the context. If the user asks about Supermarkets using the Thyaga voucher, respond with the information you have available, but clarify if specific details aren't listed. If the user asks for merchants generically, list the merchant types and ask to specify a category. For any questions not relevant to the context, If the user question is not relevant to the context, just say "Sorry, I couldn't find any information. Would you like to chat with a live agent?". Do NOT make up any answers or provide information not relevant to the context using public information.`;
-
-    saveMessage(userChatId, "system", systemPrompt);
-    saveMessage(userChatId, "user", translatedQuestion);
-    
-
-    const questionRephrasePrompt = `As a customer service assistant, kindly assess whether the FOLLOWUP QUESTION related to the CHAT HISTORY or if it introduces a new question. If the FOLLOWUP QUESTION is unrelated, refrain from rephrasing it. However, if it is related, please rephrase it as an independent query utilizing relevant keywords from the CHAT HISTORY. ---------- CHAT HISTORY: {${JSON.stringify(chatHistoryMemory[userChatId]?.slice(-5) ?? [])}} ---------- FOLLOWUP QUESTION: {${translatedQuestion}} ---------- Standalone question:`;
-
-    const completionQuestion = await openai.completions.create({
-      model: "gpt-3.5-turbo-instruct",
-      prompt: questionRephrasePrompt,
-      max_tokens: 50,
-      temperature: 0,
-    });
-    console.log("Standalone question : ",completionQuestion.choices[0].text.trim())
-
-    const category = await determineCategory(completionQuestion.choices[0].text.trim());
-    console.log("category : ",category)
-
-    const context = await generateContext(completionQuestion.choices[0].text.trim(), category, 4);
-    saveMessage(userChatId, "system", systemPrompt.replace("{context}", context));
-
-    const assistantResponse = await getCompletion(userChatId);
-    console.log("Assistant response : ",assistantResponse)
-    const translatedResponse = language === "English" ? assistantResponse : await translateToLanguage(assistantResponse || '', language);
-    saveMessage(userChatId, "assistant", translatedResponse || '');
-
-    const [response] = await textToSpeachClient.synthesizeSpeech({
-      input: { text: translatedResponse },
-      voice: { languageCode: languageCode, name: voiceName },
-      audioConfig: { audioEncoding: "MP3" },
-    });
-
-    await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: translatedResponse,
-      message_sent_by: "bot",
-      viewed_by_admin: "no",
-    });
-
-    res.status(200).json({ 
-      userText: translatedQuestion, 
-      chatId: userChatId, 
-      answer: translatedResponse,
-      audioSrc: `data:audio/mp3;base64,${response.audioContent.toString("base64")}`,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 //provide the best available information based on what you have.

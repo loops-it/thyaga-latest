@@ -250,8 +250,6 @@ function createMessageDiv(role, content) {
   return messageDiv;
 }
 
-
-
 // Function - handle image based on role
 function createMessageImage(role) {
   const image = document.createElement("img");
@@ -708,28 +706,26 @@ function stopSpeaking() {
 
 document.getElementById("stopSpeaking").addEventListener("click", stopSpeaking);
 
-
-let backgroundMusic;
+// let backgroundMusic;
 
 // Function to start background music
-const startBackgroundMusic = () => {
-  if (!backgroundMusic) {
-    backgroundMusic = new Audio('/melodyloops-bright-shiny-morning.mp3');
-    backgroundMusic.loop = true;
-    backgroundMusic.volume = 0.5; 
-    backgroundMusic.play();
-  }
-};
+// const startBackgroundMusic = () => {
+//   if (!backgroundMusic) {
+//     backgroundMusic = new Audio('/melodyloops-bright-shiny-morning.mp3');
+//     backgroundMusic.loop = true;
+//     backgroundMusic.volume = 0.5;
+//     backgroundMusic.play();
+//   }
+// };
 
 // Function to stop background music
-const stopBackgroundMusic = () => {
-  if (backgroundMusic) {
-    backgroundMusic.pause();
-    backgroundMusic.currentTime = 0;
-    backgroundMusic = null;
-  }
-};
-
+// const stopBackgroundMusic = () => {
+//   if (backgroundMusic) {
+//     backgroundMusic.pause();
+//     backgroundMusic.currentTime = 0;
+//     backgroundMusic = null;
+//   }
+// };
 
 // Function to handle starting the recording
 async function startRecording() {
@@ -750,8 +746,8 @@ async function startRecording() {
 
       const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
       let chatId = localStorage.getItem("chatId");
-      console.log("chat id : ", chatId)
-      
+      console.log("chat id : ", chatId);
+
       let selectedLanguage;
       if (selectedLanguageLocal === "Singlish") {
         selectedLanguage = "Sinhala";
@@ -763,21 +759,20 @@ async function startRecording() {
 
       const formData = new FormData();
       formData.append("audio", audioBlob);
-  formData.append("chatId", chatId); 
-  formData.append("voiceID", chatId);
-  formData.append("messages", chatHistory) 
-  formData.append("language", selectedLanguage || "English");
-
+      formData.append("chatId", chatId);
+      formData.append("voiceID", chatId);
+      formData.append("messages", chatHistory);
+      formData.append("language", selectedLanguage || "English");
+      formData.append("chatStatus", "Ongoing");
 
       try {
-        startBackgroundMusic();
+        // startBackgroundMusic();
         showTypingAnimation();
         const response = await fetch("/recording-start", {
           method: "POST",
           body: formData,
         });
 
-        
         const transcript = await response.json();
         console.log("bot answer TT : ", transcript);
         if (!localStorage.getItem("chatId")) {
@@ -785,11 +780,11 @@ async function startRecording() {
         }
         appendMessageToResponse("user", transcript.userText);
         chatHistory.push({ role: "user", content: transcript.userText });
-        if (transcript.answer !== null){
+        if (transcript.answer !== null) {
           appendMessageToResponse("bot", transcript.answer, transcript);
         }
         hideTypingAnimation();
-        stopBackgroundMusic();
+        // stopBackgroundMusic();
 
         // Disable startRecording button and change icon
         document.getElementById("startRecording").disabled = true;
@@ -800,13 +795,8 @@ async function startRecording() {
           .getElementById("startRecordingIcon")
           .classList.add("bi-three-dots", "loading");
 
-      
-
-        
         if (transcript.answer !== null) {
-          
           if (transcript.audioSrc === null) {
-           
             document.getElementById("startRecording").style.display = "none";
             document.getElementById("stopSpeaking").style.display = "block";
             responsiveVoice.speak(transcript.answer, selectedLanguage, {
@@ -862,6 +852,43 @@ function stopRecording() {
       .getElementById("startRecordingIcon")
       .classList.remove("bi-mic-mute-fill");
     document.getElementById("startRecordingIcon").classList.add("bi-mic-fill");
+  }
+}
+
+async function CallChatCloseByUser() {
+  console.log("close clicked ...")
+  try {
+    const selectedLanguageLocal = localStorage.getItem("selectedLanguage");
+    let chatId = localStorage.getItem("chatId");
+
+    let selectedLanguage;
+    if (selectedLanguageLocal === "Singlish") {
+      selectedLanguage = "Sinhala";
+    } else if (selectedLanguageLocal === "Tanglish") {
+      selectedLanguage = "Tamil";
+    } else {
+      selectedLanguage = selectedLanguageLocal;
+    }
+
+    const formData = new FormData();
+    formData.append("chatId", chatId);
+    formData.append("voiceID", chatId);
+    formData.append("messages", JSON.stringify(chatHistory));
+    formData.append("language", selectedLanguage || "English");
+    formData.append("chatStatus", "chatClosed");
+
+    const response = await fetch("/recording-start", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.ok) {
+      console.log("Chat closed successfully.");
+    } else {
+      console.error("Failed to close chat.");
+    }
+  } catch (error) {
+    console.error("Error closing chat:", error);
   }
 }
 
