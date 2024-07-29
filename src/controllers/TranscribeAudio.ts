@@ -10,7 +10,7 @@ const speech = require("@google-cloud/speech");
 const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
 import multer from "multer";
 import { OperationUsage } from "@pinecone-database/pinecone/dist/data/types";
-import { AudioContext } from 'node-web-audio-api';
+// import { AudioContext } from 'node-web-audio-api';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Readable } from 'stream';
@@ -281,75 +281,75 @@ const determineCategory = async (question: string): Promise<string> => {
 const mp3FilePath = path.join(__dirname, '../public/melodyloops-bright-shiny-morning.mp3');
 console.log("file path mp3 : ", mp3FilePath)
 
-const audioContext = new AudioContext();
-let source: AudioBufferSourceNode | null = null;
-let isPlaying = false;
+// const audioContext = new AudioContext();
+// let source: AudioBufferSourceNode | null = null;
+// let isPlaying = false;
 
 // play the MP3 file
-const playAudio = () => {
-  if (isPlaying) {
-      console.log('Audio is already playing.');
-      return;
-  }
+// const playAudio = () => {
+//   if (isPlaying) {
+//       console.log('Audio is already playing.');
+//       return;
+//   }
 
-  // Create a readable stream from the file
-  const fileStream = fs.createReadStream(mp3FilePath);
+//   // Create a readable stream from the file
+//   const fileStream = fs.createReadStream(mp3FilePath);
 
-  // Read MP3 file into buffer
-  const mp3Buffer: Buffer[] = [];
-  fileStream.on('data', (chunk: Buffer) => mp3Buffer.push(chunk));
-  fileStream.on('end', () => {
-      const buffer = Buffer.concat(mp3Buffer);
+//   // Read MP3 file into buffer
+//   const mp3Buffer: Buffer[] = [];
+//   fileStream.on('data', (chunk: Buffer) => mp3Buffer.push(chunk));
+//   fileStream.on('end', () => {
+//       const buffer = Buffer.concat(mp3Buffer);
 
-      // Convert Buffer to ArrayBuffer
-      const arrayBuffer = Uint8Array.from(buffer).buffer;
+//       // Convert Buffer to ArrayBuffer
+//       const arrayBuffer = Uint8Array.from(buffer).buffer;
 
-      audioContext.decodeAudioData(arrayBuffer)
-          .then((audioBuffer: AudioBuffer) => {
-              // Stop and disconnect previous source if it exists
-              if (source) {
-                  source.stop();
-                  source.disconnect();
-              }
+//       audioContext.decodeAudioData(arrayBuffer)
+//           .then((audioBuffer: AudioBuffer) => {
+//               // Stop and disconnect previous source if it exists
+//               if (source) {
+//                   source.stop();
+//                   source.disconnect();
+//               }
 
-              source = audioContext.createBufferSource();
-              source.buffer = audioBuffer;
-              source.connect(audioContext.destination);
-              source.start(0);
-              isPlaying = true;
-              console.log('Playback started.');
-          })
-          .catch((err: Error) => {
-              console.error('Error decoding audio:', err);
-          });
-  });
-};
+//               source = audioContext.createBufferSource();
+//               source.buffer = audioBuffer;
+//               source.connect(audioContext.destination);
+//               source.start(0);
+//               isPlaying = true;
+//               console.log('Playback started.');
+//           })
+//           .catch((err: Error) => {
+//               console.error('Error decoding audio:', err);
+//           });
+//   });
+// };
 
 //stop the MP3 file
-const stopAudio = () => {
-  if (isPlaying && source) {
-      try {
-          source.stop();
-          source.disconnect();
-      } catch (err) {
-          console.error('Error stopping audio:', err);
-      } finally {
-          isPlaying = false;
-          source = null; 
-          console.log('Playback stopped.');
-      }
-  } else {
-      console.log('No audio is currently playing.');
-  }
-};
+// const stopAudio = () => {
+//   if (isPlaying && source) {
+//       try {
+//           source.stop();
+//           source.disconnect();
+//       } catch (err) {
+//           console.error('Error stopping audio:', err);
+//       } finally {
+//           isPlaying = false;
+//           source = null; 
+//           console.log('Playback stopped.');
+//       }
+//   } else {
+//       console.log('No audio is currently playing.');
+//   }
+// };
 
 // Main handler function
-export const chatTranscribeAudio = async (
+export const chatTranscribeAudioIntergrated = async (
   req: RequestWithChatId,
   res: Response
 ) => {
 
-  playAudio();
+  // playAudio();
   const data = req.body as RequestBody;
   console.log("DATA  :  ", data);
 
@@ -425,7 +425,7 @@ export const chatTranscribeAudio = async (
           audioConfig: { audioEncoding: "MP3" },
         });
 
-        stopAudio();
+        // stopAudio();
         return res.status(200).json({
           userText: transcribedText,
           chatId: userChatId,
@@ -491,7 +491,7 @@ export const chatTranscribeAudio = async (
         audioConfig: { audioEncoding: "MP3" },
       });
 
-      stopAudio();
+      // stopAudio();
       res.status(200).json({
         userText: translatedQuestion,
         chatId: userChatId,

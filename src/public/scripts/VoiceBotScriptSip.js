@@ -768,7 +768,7 @@ async function startRecording() {
       try {
         // startBackgroundMusic();
         showTypingAnimation();
-        const response = await fetch("/recording-start", {
+        const response = await fetch("/recording-start-intergrate", {
           method: "POST",
           body: formData,
         });
@@ -877,7 +877,7 @@ async function CallChatCloseByUser() {
     formData.append("language", selectedLanguage || "English");
     formData.append("chatStatus", "chatClosed");
 
-    const response = await fetch("/recording-start", {
+    const response = await fetch("/recording-start-intergrate", {
       method: "POST",
       body: formData,
     });
