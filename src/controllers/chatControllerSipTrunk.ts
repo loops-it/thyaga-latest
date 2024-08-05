@@ -5,6 +5,7 @@ import { Request as ExpressRequest, Response } from "express";
 import File from "../../models/File";
 import BotChats from "../../models/BotChats";
 import { Translate } from "@google-cloud/translate/build/src/v2";
+const speech = require("@google-cloud/speech");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 if (
@@ -22,16 +23,37 @@ interface ChatEntry {
   role: string;
   content: string;
 }
+const serviceAccountKey = {
+  type: "service_account",
+  project_id: process.env.GOOGLE_PROJECT_ID,
+  private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+  private_key: process.env.GOOGLE_PRIVATE_KEY
+    ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n")
+    : "",
+  client_email: process.env.GOOGLE_CLIENT_EMAIL,
+  client_id: process.env.GOOGLE_CLIENT_ID,
+  auth_uri: process.env.GOOGLE_AUTH_URI,
+  token_uri: process.env.GOOGLE_TOKEN_URI,
+  auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_X509_CERT_URL,
+  client_x509_cert_url: process.env.GOOGLE_CLIENT_X509_CERT_URL,
+};
 const translate = new Translate({
-  key: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  credentials: serviceAccountKey,
 });
 
-export const chatResponseSip = async (req: RequestWithChatId, res: Response) => {
+const clientGoogle = new speech.SpeechClient({
+  credentials: serviceAccountKey,
+});
+
+export const chatResponseSip = async (
+  req: RequestWithChatId,
+  res: Response
+) => {
   // console.log("req : ", req.body.chatId)
   const index = pc.index("botdb");
   const namespace = index.namespace("thyaga-data");
   //thyaga-data
-
+  console.log("transcribe .....1")
   let userChatId = req.body.chatId || "";
   let language = req.body.language;
 
@@ -51,10 +73,78 @@ export const chatResponseSip = async (req: RequestWithChatId, res: Response) => 
       const prefix = "chat";
       userChatId = `${prefix}_${year}${month}${day}_${hours}${minutes}${seconds}`;
 
-      // console.log("Generated chat id : ", userChatId);
+      console.log("Generated chat id : ", userChatId);
     } else {
-      // console.log("Existing chat id : ", userChatId);
+      console.log("Existing chat id : ", userChatId);
     }
+    console.log("transcribe .....2")
+
+
+
+
+
+
+
+
+
+
+
+    // transcribe audio
+    let languageCode = "en-US";
+    let transcribedText = ''
+    if (language === "Sinhala") {
+      languageCode = "si-LK";
+    } else if (language === "Tamil") {
+      languageCode = "ta-IN";
+    }
+
+    console.log("transcribe .....A")
+
+    if (!req.file) {
+      return res.status(400).send("No audio file uploaded.");
+    }
+
+    const audioBuffer = req.file.buffer;
+
+    console.log("audioBuffer : ", audioBuffer);
+
+    const request = {
+      audio: {
+        content: audioBuffer.toString("base64"),
+      },
+      config: {
+        encoding: "MP3",
+        sampleRateHertz: 16000,
+        languageCode: languageCode,
+      },
+    };
+
+    try {
+      const [response] = await clientGoogle.recognize(request);
+      const transcription = response.results
+        .map(
+          (result: { alternatives: { transcript: any }[] }) =>
+            result.alternatives[0].transcript
+        )
+        .join("\n");
+        transcribedText = transcription;
+      console.log("transcribe .....")
+      console.log(`Transcription Variable: ${transcribedText}`);
+      console.log(`Transcription (Google Cloud): ${transcription}`);
+      
+    } catch (error) {
+      console.error("ERROR:", error);
+    }
+
+
+
+
+
+
+
+
+
+
 
     //============= get question ======================
     // get user message with history
@@ -250,26 +340,26 @@ Standalone question:`;
       // Answer:
       // `;
 
-//       const categorySelectionPrompt = `
-// Given a question and a list of categories, identify the appropriate category. Use the following guidelines:
-// 1. If the question asks for types or a list of categories of merchants, categorize it as "merchants".
-// 2. If the question asks for merchants of any specific category (e.g., "hotel merchants"), categorize it as "merchants".
-// 3. If the question asks for merchants in a specific location (e.g., "merchants in Thyaga"), categorize it as "merchants".
-// 4. If the question asks for Thyaga merchants or similar variations, categorize it as "merchants".
-// 5. For all other questions, provide only the exact matching category name from the list.
-// 6. If the question asks for information about Thyaga, categorize it as "about".
-// 7. If there is no match, state "Unavailable".
+      //       const categorySelectionPrompt = `
+      // Given a question and a list of categories, identify the appropriate category. Use the following guidelines:
+      // 1. If the question asks for types or a list of categories of merchants, categorize it as "merchants".
+      // 2. If the question asks for merchants of any specific category (e.g., "hotel merchants"), categorize it as "merchants".
+      // 3. If the question asks for merchants in a specific location (e.g., "merchants in Thyaga"), categorize it as "merchants".
+      // 4. If the question asks for Thyaga merchants or similar variations, categorize it as "merchants".
+      // 5. For all other questions, provide only the exact matching category name from the list.
+      // 6. If the question asks for information about Thyaga, categorize it as "about".
+      // 7. If there is no match, state "Unavailable".
 
-// Do not add any additional text or punctuation.
-// ----------
-// QUESTION: {${completionQuestion.choices[0].text}}
-// ----------
-// CATEGORY LIST: {${categoryList}}
-// ----------
-// Answer:
-// `;
+      // Do not add any additional text or punctuation.
+      // ----------
+      // QUESTION: {${completionQuestion.choices[0].text}}
+      // ----------
+      // CATEGORY LIST: {${categoryList}}
+      // ----------
+      // Answer:
+      // `;
 
-const categorySelectionPrompt = `
+      const categorySelectionPrompt = `
 Given a question and a list of categories, identify the appropriate category. Use the following guidelines:
 1. If the question asks for types or a list of categories of merchants, categorize it as "merchants".
 2. If the question asks for merchants of any specific category (e.g., "hotel merchants"), categorize it as "merchants".
@@ -287,7 +377,6 @@ CATEGORY LIST: {${categoryList}}
 ----------
 Answer:
 `;
-
 
       const categorySelection = await openai.completions.create({
         model: "gpt-3.5-turbo-instruct",
@@ -352,7 +441,6 @@ Answer:
       // set system prompt
       // =============================================================================
 
-
       // const sysPrompt = `You are a helpful assistant and you are friendly. If the user greets you, respond warmly. Your name is Thyaga GPT. Answer user questions only based on the given context: ${context}. Your answer must be less than 180 tokens. If the user asks for information like your email or address, provide the Thyaga email and address. If your answer has a list, format it as a numbered list.
 
       // For specific questions about available categories (e.g., "What are the choices available in Thyaga?"), provide the relevant categories as listed in the context. If the user asks about Supermarkets using the Thyaga voucher, respond with the information you have available, but clarify if specific details aren't listed.
@@ -362,7 +450,6 @@ Answer:
       // If user question is not relevent to the Context just say "Sorry, I couldn't find any information. Would you like to chat with a live agent?".
       // Do NOT make up any answers or provide information not relevant to the context using public information.
       // `;
-
 
       const sysPrompt = `You are a helpful assistant and you are friendly. If the user greets you, respond warmly. Your name is Thyaga GPT. Answer user questions only based on the given context: ${context}. Your answer must be less than 180 tokens. If the user asks for information like your email or address, provide the Thyaga email and address. If your answer has a list, format it as a numbered list.
 
@@ -376,7 +463,6 @@ If the user question is not relevant to the context, just say "Sorry, I couldn't
 
 Do NOT make up any answers or provide information not relevant to the context using public information.
 `;
-
 
       // const sysPrompt = `You are a helpful assistant and you are friendly. if user greet you you will give proper greeting in friendly manner. Your name is Thyaga GPT. Answer user question Only based on given Context: ${context}, your answer must be less than 150 words. If the user asks for information like your email or address, you'll provide Thyaga email and address. If answer has list give it as numberd list. If it has math question relevent to given Context give calculated answer, If user question is not relevent to the Context just say "Sorry, I couldn't find any information on that. Would you like to chat with a live agent?". Do NOT make up any answers and questions not relevant to the context using public information.`;
 

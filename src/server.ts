@@ -76,13 +76,14 @@ import { loadLiveChatHistory } from "./controllers/loadLiveChatHistory";
 import { Op } from "sequelize";
 import { chatAudioResponse } from "./controllers/chatControllerAudio";
 import multer from "multer";
-import { chatTranscribeAudio } from "./controllers/TranscribeAudio";
+import { chatTranscribeAudioIntergrated } from "./controllers/TranscribeAudio";
 import { VoiceSipTrunkBotResponce } from "./controllers/VoiceSipTrunk";
 import { chatResponseSip } from "./controllers/chatControllerSipTrunk";
 import { CustomizeBotView } from "./controllers/CustomizeBotView";
 import { customizeBot } from "./controllers/CustomizeBot";
 
 import Customize from '../models/Customize';
+import { chatTranscribeAudio } from "./controllers/TranscribeAudioIntergrated";
 
 const app = express();
 app.use(cookieParser());
@@ -125,6 +126,8 @@ app.use("/voice-and-chat-bot", indexRouter);
 app.use("/voice-call", indexRouter);
 
 app.post('/recording-start', upload.single('audio'), chatTranscribeAudio);
+app.post('/recording-start-intergrate', upload.single('audio'), chatTranscribeAudioIntergrated);
+
 
 app.post("/api/chat-response", chatResponse);
 app.post("/chat-response-sip", chatResponseSip);
