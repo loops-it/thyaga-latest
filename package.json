@@ -13,6 +13,7 @@
   "devDependencies": {
     "@pinecone-database/pinecone": "^2.1.0",
     "@types/node": "^20.11.30",
+    "@types/node-notifier": "^8.0.5",
     "@types/nodemailer": "^6.4.15",
     "nodemon": "^3.1.0",
     "openai": "^4.0.0",
@@ -47,6 +48,7 @@
     "multer": "^1.4.5-lts.1",
     "mysql": "^2.18.1",
     "mysql2": "^3.9.3",
+    "node-notifier": "^10.0.1",
     "node-record-lpcm16": "^1.0.1",
     "nodemailer": "^6.9.14",
     "pdf-parse": "^1.1.1",

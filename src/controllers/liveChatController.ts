@@ -10,6 +10,8 @@ import Agent from '../../models/Agent';
 import BotChats from '../../models/BotChats';
 
 import nodemailer from 'nodemailer';
+import notifier from 'node-notifier';
+import path from 'path'; 
 
 
 interface UserDecodedToken extends JwtPayload {
@@ -22,27 +24,28 @@ export const switchToAgent = async (req: Request, res: Response, next: NextFunct
     const { chatId } = req.body
 
 
-    //email function
+ 
 
 
-    // Create a nodemailer transporter
+   //email function
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
         secure: false,
         auth: {
-            user: "loopssolutionmail@gmail.com",
-            pass: "jvtimyutrbtucxep",
+            user: "thyagabot@gmail.com",  
+            pass: "fbqxrvbcvvnllhok",
 
 
 
         }
     });
 
-    // Email options
     const mailOptions = {
         from: 'thinupawani@gmail.com',
+        // to: 'devni@thyaga.lk',
         to: 'uthzara@gmail.com',
+        // devni@thyaga.lk, 
         subject: 'Switch to Agent Notification',
         text: `Your chat with ID ${chatId} has been switched to an agent.Please Login to the dahsboard as a Live agent !`
     };
@@ -50,11 +53,20 @@ export const switchToAgent = async (req: Request, res: Response, next: NextFunct
     // Send the email
     try {
         await transporter.sendMail(mailOptions);
+      
+        notifier.notify({
+            title: 'Switch to Agent Notification',
+            message: `Chat with ID ${chatId} has been switched to an agent. Check your email for details.`,
+            icon: path.join(__dirname, 'path/to/icon.png'), // Optional: Add an icon if desired
+            sound: true, 
+        });
+
         // res.json({ status: "success" });
     } catch (error) {
         console.error('Error sending email:', error);
-        // res.status(500).json({ status: "error", message: "Failed to send email", error: error.message });
+        res.status(500).json({ status: "error", message: "Failed to send email", error: error });
     }
+
 
 
 
