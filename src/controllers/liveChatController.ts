@@ -57,7 +57,7 @@ export const switchToAgent = async (req: Request, res: Response, next: NextFunct
         notifier.notify({
             title: 'Switch to Agent Notification',
             message: `Chat with ID ${chatId} has been switched to an agent. Check your email for details.`,
-            icon: path.join(__dirname, 'path/to/icon.png'), // Optional: Add an icon if desired
+            icon: path.join(__dirname, 'path/to/icon.png'), 
             sound: true, 
         });
 
