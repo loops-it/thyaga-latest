@@ -1,0 +1,262 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING") 
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password      String
+  user_role     Int
+  status        String
+  online_status String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  name      String   
+  phone     String   
+  status    String   
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("other_admin_details")
+}
+
+model Agent {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  name            String
+  phone           String
+  status          String
+  profile_picture String?  // Nullable field
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  @@map("other_agent_details")
+}
+
+model AgentLanguages {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  language  String   
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("agent_languages")
+}
+
+model BotChats {
+  id               Int      @id @default(autoincrement())
+  message_id       String
+  language         String
+  message          String
+  message_sent_by  String
+  viewed_by_admin  String?   // This field is optional
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  @@map("chat_bot_chats")
+}
+
+model ChatHeader {
+  id          Int      @id @default(autoincrement())
+  message_id  String
+  agent       String?
+  language    String?
+  rating      String?
+  feedback    String?
+  status      String
+  is_time_out String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("live_agent_chat_header")
+}
+
+model ChatTimer {
+  id         Int      @id @default(autoincrement())
+  message_id String
+  agent      Int
+  time       Float    @default(0.0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  @@map("live_chat_timer")
+}
+
+model Edge {
+  id           Int      @id @default(autoincrement())
+  edge_id      String?  // text can be mapped to String in Prisma
+  source       String?  // text can be mapped to String in Prisma
+  source_handle String?  // text can be mapped to String in Prisma
+  target       String?  // text can be mapped to String in Prisma
+  target_handle String?  // text can be mapped to String in Prisma
+  type         String?  // text can be mapped to String in Prisma
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@map("flow_edges")
+}
+
+model FacebookChats {
+  id             Int      @id @default(autoincrement())
+  sender_id      String
+  message_sent_by String
+  message        String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@map("facebook_chats")
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  file_id   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("files")
+}
+
+model FlowButtonData {
+  id        Int      @id @default(autoincrement())
+  node_id   String?
+  text      String?
+  link      String?
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("flow_button_data")
+}
+
+model FlowCardData {
+  id          Int      @id @default(autoincrement())
+  node_id     String?
+  title       String?
+  description String?
+  image       String?
+  created_at   DateTime? @default(now())
+  updated_at   DateTime? @updatedAt
+
+  @@map("flow_card_data")
+}
+
+model FlowTextBox {
+  id           Int       @id @default(autoincrement())
+  node_id      String?   // Assuming `node_id` can be nullable
+  title        String?   // Assuming `title` can be nullable
+  description  String?   // Assuming `description` can be nullable
+  created_at    DateTime? @default(now())
+  updated_at    DateTime? @updatedAt
+
+  @@map("flow_text_box")
+}
+
+
+model FlowTextOnly {
+  id         Int    @id @default(autoincrement())
+  node_id    String?
+  text       String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("flow_text_only")
+}
+
+model LiveChat {
+  id              Int       @id @default(autoincrement())
+  message_id       String    
+  sent_by          String    
+  message         String    
+  sent_to_user      String?   
+  viewed_by_agent   String?   
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  @@map("live_agent_chat_chats")
+}
+
+model Node {
+  id                 Int       @id @default(autoincrement())
+  node_id            String?  
+  dragging           String?  
+  height             String?   
+  position           Json?     
+  position_absolute   Json?    
+  selected           String?   
+  type               String?   
+  width              String?   
+  extent             String?   
+  parent_id           String?   
+  intent             String?   
+  language           String?   
+  value           String?
+  placeholder           String?
+  label           String?
+  created_at          DateTime? @default(now())  
+  updated_at          DateTime? @updatedAt      
+
+  @@map("flow_nodes")
+}
+
+model OfflineFormSubmissions {
+  id        Int       @id @default(autoincrement())
+  chat_id    String    // Assuming it's a chat identifier
+  name      String
+  email     String
+  subject   String
+  message   String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("offline_form_submissions")
+}
+
+model Question {
+  id         Int       @id @default(autoincrement())
+  question   String
+  intent     Int
+  language   String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+   @@map("questions")
+}
+
+model Sector {
+  id         Int       @id @default(autoincrement())
+  sector_name   String
+  email     String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+   @@map("sectors")
+}
+
+model FlowFormSubmissions {
+  id         Int       @id @default(autoincrement())
+  form_id   String
+  field_data     String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+   @@map("flow_form_submissions")
+}

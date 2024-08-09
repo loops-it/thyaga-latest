@@ -6,6 +6,9 @@ import File from "../../models/File";
 import BotChats from "../../models/BotChats";
 import { Translate } from "@google-cloud/translate/build/src/v2";
 
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 if (
   !process.env.PINECONE_API_KEY ||
@@ -95,12 +98,22 @@ export const chatResponse = async (req: RequestWithChatId, res: Response) => {
       chatHistory[lastUserIndex].content = translatedQuestion;
       // console.log(chatHistory);
     }
-    await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: userQuestion,
-      message_sent_by: "customer",
-      viewed_by_admin: "no",
+    // await BotChats.create({
+    //   message_id: userChatId,
+    //   language: language,
+    //   message: userQuestion,
+    //   message_sent_by: "customer",
+    //   viewed_by_admin: "no",
+    // });
+
+    await prisma.botChats.create({
+      data: {
+          message_id: userChatId,
+          language: language,
+          message: userQuestion,
+          message_sent_by: "customer",
+          viewed_by_admin: "no",
+      },
     });
 
     let kValue = 2;
@@ -438,13 +451,24 @@ Do NOT make up any answers or provide information not relevant to the context us
     // }
     // await processRequest(translatedQuestion, userChatId);
 
-    await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: translatedResponse,
-      message_sent_by: "bot",
-      viewed_by_admin: "no",
+    // await BotChats.create({
+    //   message_id: userChatId,
+    //   language: language,
+    //   message: translatedResponse,
+    //   message_sent_by: "bot",
+    //   viewed_by_admin: "no",
+    // });
+
+    await prisma.botChats.create({
+      data: {
+          message_id: userChatId,
+          language: language,
+          message: translatedResponse,
+          message_sent_by: "bot",
+          viewed_by_admin: "no",
+      },
     });
+
     // console.log("botResponse",botResponse);
     // console.log("translatedResponse",translatedResponse);
     res.json({

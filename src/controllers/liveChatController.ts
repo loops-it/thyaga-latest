@@ -12,6 +12,9 @@ import BotChats from '../../models/BotChats';
 import nodemailer from 'nodemailer';
 import notifier from 'node-notifier';
 import path from 'path'; 
+
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
  
 
 
@@ -72,54 +75,57 @@ export const switchToAgent = async (req: Request, res: Response, next: NextFunct
 
 
 try {
-    const onlineUser = await User.findOne({ where: { online_status: 'online', status: 'active', user_role: 2 } });
+    // const onlineUser = await User.findOne({ where: { online_status: 'online', status: 'active', user_role: 2 } });
+    const onlineUser = await prisma.user.findFirst({where: { online_status: 'online',status: 'active',user_role: 2 } });
     if (onlineUser) {
-        const chat_header_exist = await ChatHeader.findOne({ where: { message_id: chatId } });
-        const queued_chats = await ChatHeader.count({
-            where: {
-                "agent": "unassigned",
-                "status": "live",
-            },
-        });
+            const chat_header_exist = await prisma.chatHeader.findFirst({where: { message_id: chatId }  });
+            
+            const queued_chats  = await prisma.chatHeader.count({where: { agent: "unassigned",status: "live" }  });
+
+        // const chat_header_exist = await ChatHeader.findOne({ where: { message_id: chatId } });
+        // const queued_chats = await ChatHeader.count({
+        //     where: {
+        //         "agent": "unassigned",
+        //         "status": "live",
+        //     },
+        // });
+        
         if (chat_header_exist) {
             res.json({ status: "success", queued_chats })
         } else {
-            const chat_main = await BotChats.findOne({
-                where: {
-                    message_id: chatId
-                }
-            });
-            const chats = await BotChats.findAll({
+            const chat_main =  await prisma.botChats.findFirst({where: { message_id: chatId }  });
+            
+            
+            const chats = await prisma.botChats.findMany({
                 where: {
                     message_id: chatId
                 },
-                order: [['id', 'ASC']]
-            });
-            if (chat_main) {
-                await ChatHeader.create({
-                    message_id: chatId,
-                    language: chat_main.language,
-                    status: "live",
-                    agent: "unassigned",
-                });
-            }
+                orderBy: { id: 'asc' }, 
+              });
 
-            for (var c = 0; c < chats.length; c++) {
 
-                await LiveChat.create({
-                    message_id: chatId,
-                    sent_by: chats[c].message_sent_by,
-                    message: chats[c].message,
-                    time: ''
-
-                })
-            }
-
-            await BotChats.destroy({
-                where: {
-                    message_id: chatId
+            if(chat_main){
+                await prisma.chatHeader.create({
+                    data: {
+                        message_id: chatId,
+                        language: chat_main.language,
+                        status: "live",
+                        agent: "unassigned",
+                    },
+                  });
                 }
-            })
+
+                for (var c = 0; c < chats.length; c++) {
+                    await prisma.liveChat.create({
+                        data: {
+                            message_id: chatId,
+                            sent_by: chats[c].message_sent_by,
+                            message: chats[c].message,
+                        },
+                      });
+                }
+            await prisma.botChats.deleteMany({where: { message_id: chatId }  });
+           
             res.json({ status: "success", queued_chats: queued_chats })
         }
     }
@@ -136,20 +142,17 @@ catch (error) {
 export const liveChat = async (req: Request, res: Response, next: NextFunction) => {
     const { chatId } = req.body
     try {
-
-        const chat_header_result = await ChatHeader.findOne({
-            where: {
-                "message_id": chatId
-            },
-        });
-        const chat_body_result = await LiveChat.findOne({
-            where: {
+        const chat_header_result  = await prisma.chatHeader.findFirst({where: { message_id: chatId }  });
+        
+        const chat_body_result = await prisma.liveChat.findFirst({
+            where: { 
                 message_id: chatId,
                 sent_by: 'agent',
                 sent_to_user: 'no',
             },
-            order: [['id', 'DESC']],
+            orderBy: { id: 'asc' },  
         });
+        
         if (chat_header_result) {
             let agent_name;
             let profile_picture;
