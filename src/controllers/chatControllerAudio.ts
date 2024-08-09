@@ -138,11 +138,13 @@ export const chatAudioResponse = async (
       // console.log(chatHistory);
     }
     await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: transcriptQuestion,
-      message_sent_by: "customer",
-      viewed_by_admin: "no",
+      data: {
+        message_id: userChatId,
+        language: language,
+        message: transcriptQuestion,
+        message_sent_by: "customer",
+        viewed_by_admin: "no",
+      },
     });
 
     let kValue = 2;
@@ -275,11 +277,13 @@ export const chatAudioResponse = async (
     }
 
     await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: translatedResponse,
-      message_sent_by: "bot",
-      viewed_by_admin: "no",
+      data: {
+        message_id: userChatId,
+        language: language,
+        message: translatedResponse,
+        message_sent_by: "bot",
+        viewed_by_admin: "no",
+      },
     });
 
     // console.log("botResponse",botResponse);

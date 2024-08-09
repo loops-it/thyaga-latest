@@ -173,10 +173,10 @@ export const liveChat = async (req: Request, res: Response, next: NextFunction) 
 
             if (chat_body_result) {
                 agent_message = chat_body_result.message;
-                await LiveChat.update(
-                    { sent_to_user: "yes" },
-                    { where: { id: chat_body_result.id } }
-                );
+                await prisma.LiveChat.updateMany({
+                    where: {  id: chat_body_result.id },
+                    data: {  sent_to_user:"yes" },
+                });
             }
             else {
                 agent_message = null;
@@ -208,27 +208,33 @@ export const liveChatUser = async (req: Request, res: Response, next: NextFuncti
     const { chatId, user_message, language } = req.body
     try {
 
-        const chat_header_exist = await ChatHeader.findOne({ where: { message_id: chatId } });
+        const chat_header_exist = await prisma.ChatHeader.findFirst({ where: { message_id: chatId } });
         if (chat_header_exist) {
-            await LiveChat.create({
-                message_id: chatId,
-                sent_by: 'customer',
-                message: user_message,
-                viewed_by_agent: 'no'
-            })
+            await prisma.LiveChat.create({
+                data: {
+                    message_id: chatId,
+                    sent_by: 'customer',
+                    message: user_message,
+                    viewed_by_agent : 'no'
+                },
+            });
         }
         else {
-            await ChatHeader.create({
-                message_id: chatId,
-                language: language,
-                status: "live",
-                agent: "unassigned",
+            await prisma.ChatHeader.create({
+                data: {
+                    message_id: chatId,
+                    language: language,
+                    status: "live",
+                    agent: "unassigned",
+                },
             });
-            await LiveChat.create({
-                message_id: chatId,
-                sent_by: 'customer',
-                message: user_message,
-                viewed_by_agent: 'no'
+            await prisma.LiveChat.create({
+                data: {
+                    message_id: chatId,
+                    sent_by: 'customer',
+                    message: user_message,
+                    viewed_by_agent : 'no'
+                },
             })
         }
         res.json({ status: "success" });
@@ -242,10 +248,10 @@ export const liveChatUser = async (req: Request, res: Response, next: NextFuncti
 export const saveRating = async (req: Request, res: Response, next: NextFunction) => {
     const { ratingValue, feedbackMessage, chatId } = req.body
     try {
-        await ChatHeader.update(
-            { rating: ratingValue, feedback: feedbackMessage, },
-            { where: { message_id: chatId } }
-        );
+        await prisma.ChatHeader.updateMany({
+            where: { message_id: chatId },
+            data: { rating:ratingValue,feedback:feedbackMessage },
+        });
         res.json({ status: "success" })
     }
     catch (error) {
@@ -257,10 +263,10 @@ export const saveRating = async (req: Request, res: Response, next: NextFunction
 export const chatUserClose = async (req: Request, res: Response, next: NextFunction) => {
     const { chatId } = req.body
     try {
-        await ChatHeader.update(
-            { status: "closed" },
-            { where: { message_id: chatId } }
-        );
+        await prisma.ChatHeader.update({
+            where: { message_id: chatId },
+            data: { status: "closed" }
+        });
         res.json({ status: "success" })
     }
     catch (error) {
@@ -271,10 +277,13 @@ export const chatUserClose = async (req: Request, res: Response, next: NextFunct
 export const chatTimeOut = async (req: Request, res: Response, next: NextFunction) => {
     const { chatId } = req.body
     try {
-        await ChatHeader.update(
-            { status: "closed", is_time_out: "yes" },
-            { where: { message_id: chatId } }
-        );
+        await prisma.ChatHeader.update({
+            where: { message_id: chatId },
+            data: { 
+                status: "closed", 
+                is_time_out: "yes" 
+            }
+        });
         res.json({ status: "success" })
     }
     catch (error) {
@@ -298,11 +307,13 @@ export const directConnectAgent = async (req: Request, res: Response, next: Next
         const prefix = 'chat';
         chatId = `${prefix}_${year}${month}${day}_${hours}${minutes}${seconds}`;
 
-        await ChatHeader.create({
-            message_id: chatId,
-            language: language,
-            status: "live",
-            agent: "unassigned",
+        await prisma.ChatHeader.create({
+            data: {
+                message_id: chatId,
+                language: language,
+                status: "live",
+                agent: "unassigned",
+            },
         });
         res.json({ status: "success", chatId: chatId })
     }

@@ -24,8 +24,10 @@ export const viewDocuments = async (req: Request, res: Response) => {
 
 
             const index = pc.index('botdb');
-            const fileIds  = await File.findAll({
-                attributes: ['file_id']
+            const fileIds  = await prisma.File.findMany({
+                select: {
+                    file_id: true,
+                }
               });
 
               const ids = fileIds.map(file => file.file_id);

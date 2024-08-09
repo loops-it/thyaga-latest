@@ -52,15 +52,13 @@ export const customizeBot = async (req: Request, res: Response, next: Function) 
         //   res.send('No file uploaded.');
         // }
 
-        await customize.create(
-            { 
-                bot_Name: title,
-                color: color,
-                select_image:"",
-            
-            },
-          );
-          		
+        await prisma.customize.create({
+          data: {
+            bot_Name: title,
+            color: color,
+            select_image: "",  // Ensure this is an empty string or handle appropriately
+          },
+        });
         
       } catch (error) {
         console.error('Error:', error);

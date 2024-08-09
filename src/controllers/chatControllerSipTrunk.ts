@@ -185,14 +185,15 @@ export const chatResponseSip = async (
       chatHistory[lastUserIndex].content = translatedQuestion;
       // console.log(chatHistory);
     }
-    await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: userQuestion,
-      message_sent_by: "customer",
-      viewed_by_admin: "no",
+    await prisma.BotChats.create({
+      data: {
+        message_id: userChatId,
+        language: language,
+        message: userQuestion,
+        message_sent_by: "customer",
+        viewed_by_admin: "no",
+      },
     });
-
     let kValue = 2;
 
     //============= change context ======================
@@ -524,12 +525,14 @@ Do NOT make up any answers or provide information not relevant to the context us
     // }
     // await processRequest(translatedQuestion, userChatId);
 
-    await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: translatedResponse,
-      message_sent_by: "bot",
-      viewed_by_admin: "no",
+    await prisma.BotChats.create({
+      data: {
+        message_id: userChatId,
+        language: language,
+        message: translatedResponse,
+        message_sent_by: "bot",
+        viewed_by_admin: "no",
+      },
     });
     // console.log("botResponse",botResponse);
     // console.log("translatedResponse",translatedResponse);

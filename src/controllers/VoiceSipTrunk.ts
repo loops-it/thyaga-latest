@@ -138,12 +138,14 @@ export const VoiceSipTrunkBotResponce = async (
       chatHistory[lastUserIndex].content = translatedQuestion;
       // console.log(chatHistory);
     }
-    await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: transcriptQuestion,
-      message_sent_by: "customer",
-      viewed_by_admin: "no",
+    await prisma.BotChats.create({
+      data: {
+        message_id: userChatId,
+        language: language,
+        message: transcriptQuestion,
+        message_sent_by: "customer",
+        viewed_by_admin: "no",
+      },
     });
 
     let kValue = 2;
@@ -275,12 +277,14 @@ export const VoiceSipTrunkBotResponce = async (
       audioSrc = `data:audio/mp3;base64,${audioContent}`;
     }
 
-    await BotChats.create({
-      message_id: userChatId,
-      language: language,
-      message: translatedResponse,
-      message_sent_by: "bot",
-      viewed_by_admin: "no",
+    await prisma.BotChats.create({
+      data: {
+        message_id: userChatId,
+        language: language,
+        message: translatedResponse,
+        message_sent_by: "bot",
+        viewed_by_admin: "no",
+      },
     });
 
     // console.log("botResponse",botResponse);

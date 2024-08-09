@@ -11,12 +11,12 @@ export const quickQuestionsAdd = async (req: Request, res: Response, next: Funct
     let question = req.body.question;
     let answer = req.body.answer;
     try {
-        await QuickQuestion.create(
-            { 
-            question: question,
-            answer: answer,
-            },
-        );
+      await prisma.QuickQuestion.create({
+        data: {
+          question: question,
+          answer: answer,
+        },
+      });
         req.flash('success', `Question Added`);
         return res.redirect('/quick-questions');
     } catch (error) {
@@ -32,13 +32,15 @@ export const quickQuestionsAdd = async (req: Request, res: Response, next: Funct
     let id = req.body.id;
     try {
 
-        await QuickQuestion.update(
-            { 
-                question: question,
-                answer: answer,
-            },
-            { where: { id: id } }
-          );
+      await prisma.QuickQuestion.update({
+        where: {
+          id: id, 
+        },
+        data: {
+          question: question, 
+          answer: answer,   
+        },
+      });
         req.flash('success', `Question Updated`);
         return res.redirect(`/edit-question?id=${id}`);
     } catch (error) {

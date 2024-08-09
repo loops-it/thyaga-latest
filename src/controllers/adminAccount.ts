@@ -22,7 +22,7 @@ export const adminAccountCreate = async (req: Request, res: Response, next: Func
     let user_role = req.body.user_role;
 
     try {
-      const email_exist = await User.findAll({
+      const email_exist = await prisma.User.findFirst({
         where: {
         email : email,
         },
@@ -32,22 +32,22 @@ export const adminAccountCreate = async (req: Request, res: Response, next: Func
     }
     else{
         const crypt_password = await (bcrypt.hash(password, 10));
-        let user = await User.create(
-            { 
+        let user = await prisma.User.create({
+          data: {
             email: email,
             password: crypt_password,
-            user_role:user_role,
-            status:"active",
-            },
-          );
-        await Admin.create(
-            { 
+            user_role: user_role,
+            status: "active",
+          },
+        });
+        await prisma.Admin.create({
+          data: {
             user_id: user.id,
             name: name,
-            phone:phone,
-            status:"active",
-            },
-          );
+            phone: phone,
+            status: "active",
+          },
+        });
           return res.json({status:"success", message:"Admin Added"})
     }
     } catch (error) {
@@ -59,21 +59,21 @@ export const adminAccountCreate = async (req: Request, res: Response, next: Func
     const {admin_name, phone, email, user_id} = req.body
 
     try {
-      const email_exist = await User.findAll({
+      const email_exist = await prisma.User.findFirst({
         where: {
         email : email,
         },
       });
     if(email_exist[0]){
         if(email_exist[0].id == user_id){
-            await Admin.update(
-                { name: admin_name,phone: phone},
-                { where: { user_id: user_id } }
-              );
-            await User.update(
-                { email: email},
-                { where: { id: user_id } }
-              );
+            await prisma.Admin.updateMany({
+              where: { user_id: user_id },
+              data: { name: admin_name,phone: phone},
+            });
+            await prisma.User.updateMany({
+              where: { id: user_id },
+              data: { email: email},
+            });
     
             return res.json({status:"success", message:"Admin Updated"})
         }
@@ -82,14 +82,14 @@ export const adminAccountCreate = async (req: Request, res: Response, next: Func
         }    
     }
     else{
-        await Admin.update(
-            { name: admin_name,phone: phone},
-            { where: { user_id: user_id } }
-          );
-        await User.update(
-            { email: email},
-            { where: { id: user_id } }
-          );
+        await prisma.Admin.updateMany({
+          where: { user_id: user_id },
+          data: { name: admin_name,phone: phone},
+        });
+        await prisma.User.updateMany({
+          where: { id: user_id },
+          data: { email: email},
+        });
 
         return res.json({status:"success", message:"Admin Updated"})
     }
@@ -102,7 +102,7 @@ export const adminAccountCreate = async (req: Request, res: Response, next: Func
     const {current_password, user_id} = req.body
 
     try {
-      const user = await User.findAll({
+      const user = await prisma.User.findFirst({
         where: {
         id : user_id,
         },
@@ -122,21 +122,21 @@ export const adminAccountCreate = async (req: Request, res: Response, next: Func
     const {admin_name, phone, email, user_id, password} = req.body
     const crypt_password = await (bcrypt.hash(password, 10));
     try {
-      const email_exist = await User.findAll({
+      const email_exist = await prisma.User.findFirst({
         where: {
         email : email,
         },
       });
     if(email_exist[0]){
         if(email_exist[0].id == user_id){
-            await Admin.update(
-                { name: admin_name,phone: phone},
-                { where: { user_id: user_id } }
-              );
-            await User.update(
-                { email: email,password: crypt_password},
-                { where: { id: user_id } }
-              );
+            await prisma.Admin.updateMany({
+              where: { user_id: user_id },
+              data: { name: admin_name,phone: phone},
+            });
+            await prisma.User.updateMany({
+              where: { id: user_id },
+              data: { email: email,password: crypt_password},
+            });
     
             return res.json({status:"success", message:"Admin Updated"})
         }
@@ -145,14 +145,14 @@ export const adminAccountCreate = async (req: Request, res: Response, next: Func
         }    
     }
     else{
-        await Admin.update(
-            { name: admin_name,phone: phone},
-            { where: { user_id: user_id } }
-          );
-        await User.update(
-            { email: email,password: crypt_password},
-            { where: { id: user_id } }
-          );
+        await prisma.Admin.updateMany({
+          where: { user_id: user_id },
+          data: { name: admin_name,phone: phone},
+        });
+        await prisma.User.updateMany({
+          where: { user_id: user_id },
+          data: { name: admin_name,phone: phone},
+        });
 
         return res.json({status:"success", message:"Admin Updated"})
     }

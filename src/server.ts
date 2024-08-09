@@ -81,9 +81,11 @@ import { VoiceSipTrunkBotResponce } from "./controllers/VoiceSipTrunk";
 import { chatResponseSip } from "./controllers/chatControllerSipTrunk";
 import { CustomizeBotView } from "./controllers/CustomizeBotView";
 import { customizeBot } from "./controllers/CustomizeBot";
+import { PrismaClient } from '@prisma/client';
 
 import Customize from '../models/Customize';
 import { chatTranscribeAudio } from "./controllers/TranscribeAudioIntergrated";
+const prisma = new PrismaClient();
 
 const app = express();
 app.use(cookieParser());
@@ -201,7 +203,7 @@ app.get("/add-admin", adminLogged, (req: Request, res: Response) => {
 });
 app.post("/admin-add", adminAccountCreate);
 app.get("/manage-admins", adminLogged, async (req: Request, res: Response) => {
-  const admins = await Admin.findAll({});
+  const admins = await prisma.Admin.findMany({});
   res.render("manage-admins", { admins: admins });
 });
 app.get(
@@ -209,8 +211,14 @@ app.get(
   adminLogged,
   async (req: Request, res: Response) => {
     let user_id = req.params.id;
-    await Admin.update({ status: "inactive" }, { where: { user_id: user_id } });
-    await User.update({ status: "inactive" }, { where: { id: user_id } });
+    await prisma.Admin.updateMany({
+      where: { user_id: user_id },
+      data: { status: "inactive" },
+    });
+    await prisma.User.updateMany({
+      where: { id: user_id },
+      data: { status: "inactive" },
+    });
     res.redirect("/manage-admins");
   }
 );
@@ -219,20 +227,26 @@ app.get(
   adminLogged,
   async (req: Request, res: Response) => {
     let user_id = req.params.id;
-    await Admin.update({ status: "active" }, { where: { user_id: user_id } });
-    await User.update({ status: "active" }, { where: { id: user_id } });
+    await prisma.Admin.updateMany({
+      where: { user_id: user_id },
+      data: { status: "active" },
+    });
+    await prisma.User.updateMany({
+      where: { id: user_id },
+      data: { status: "active" },
+    });
     res.redirect("/manage-admins");
   }
 );
 app.get("/edit-admin", adminLogged, async (req: Request, res: Response) => {
   const user_id = req.query.id;
 
-  const admin_details = await Admin.findOne({
+  const admin_details = await prisma.Admin.findFirst({
     where: {
       user_id: user_id,
     },
   });
-  const login_details = await User.findOne({
+  const login_details = await prisma.User.findFirst({
     where: {
       id: user_id,
     },
@@ -257,9 +271,11 @@ app.get(
   "/conversation-history",
   adminLogged,
   async (req: Request, res: Response) => {
-    const chats = await BotChats.findAll({
-      attributes: ["message_id"],
-      group: ["message_id"],
+    const chats = await prisma.BotChats.groupBy({
+      by: ["message_id"],
+      _count: {
+        message_id: true,
+      },
     });
     res.render("conversation-history", { chats: chats });
   }
@@ -282,22 +298,22 @@ app.get(
   async (req: Request, res: Response) => {
     const agent_id = req.query.id;
 
-    const agent = await Agent.findAll({
+    const agent = await  prisma.Agent.findMany({
       where: {
         user_id: agent_id,
       },
     });
-    const chat_count = await ChatHeader.count({
+    const chat_count = await  prisma.ChatHeader.count({
       where: {
         agent: agent_id,
       },
     });
-    const timer = await ChatTimer.findAll({
+    const timer = await  prisma.ChatTimer.findMany({
       where: {
         agent: agent_id,
       },
     });
-    const chats = await ChatHeader.findAll({
+    const chats = await prisma.ChatHeader.findMany({
       where: {
         agent: agent_id,
       },
@@ -320,12 +336,12 @@ app.get(
   async (req: Request, res: Response) => {
     const agent_id = req.query.id;
 
-    const agent = await Agent.findAll({
+    const agent = await prisma.Agent.findMany({
       where: {
         user_id: agent_id,
       },
     });
-    const chats = await ChatHeader.findAll({
+    const chats = await prisma.ChatHeader.findMany({
       where: {
         agent: agent_id,
         feedback: {
@@ -351,11 +367,14 @@ app.get("/manage-agents", adminLogged, async (req: Request, res: Response) => {
     adminLogged,
     async (req: Request, res: Response) => {
       let user_id = req.params.id;
-      await Agent.update(
-        { status: "inactive" },
-        { where: { user_id: user_id } }
-      );
-      await User.update({ status: "inactive" }, { where: { id: user_id } });
+      await prisma.Agent.updateMany({
+        where: { user_id: user_id },
+        data: { status: "inactive" },
+      });
+      await prisma.User.updateMany({
+        where: { id: user_id },
+        data: { status: "inactive" },
+      });  
       res.redirect("/manage-agents");
     }
   );
@@ -364,25 +383,31 @@ app.get("/manage-agents", adminLogged, async (req: Request, res: Response) => {
     adminLogged,
     async (req: Request, res: Response) => {
       let user_id = req.params.id;
-      await Agent.update({ status: "active" }, { where: { user_id: user_id } });
-      await User.update({ status: "active" }, { where: { id: user_id } });
+      await prisma.Agent.updateMany({
+        where: { user_id: user_id },
+        data: { status: "active" },
+      });
+      await prisma.User.updateMany({
+        where: { user_id: user_id },
+        data: { status: "active" },
+      });
       res.redirect("/manage-agents");
     }
   );
   app.get("/edit-agent", adminLogged, async (req: Request, res: Response) => {
     const user_id = req.query.id;
 
-    const agent_details = await Agent.findOne({
+    const agent_details = await prisma.Agent.findFirst({
       where: {
         user_id: user_id,
       },
     });
-    const login_details = await User.findOne({
+    const login_details = await prisma.User.findFirst({
       where: {
         id: user_id,
       },
     });
-    const languages = await AgentLanguages.findAll({
+    const languages = await prisma.AgentLanguages.findMany({
       where: {
         user_id: user_id,
       },
@@ -393,7 +418,7 @@ app.get("/manage-agents", adminLogged, async (req: Request, res: Response) => {
       languages: languages,
     });
   });
-  const agents = await Agent.findAll({});
+  const agents = await prisma.Agent.findMany({});
   res.render("manage-agents", { agents: agents });
 });
 
@@ -409,7 +434,7 @@ app.get(
   async (req: Request, res: Response) => {
     const successMessage = req.flash("success")[0];
     const errorMessage = req.flash("error")[0];
-    const questions = await QuickQuestion.findAll({});
+    const questions = await prisma.QuickQuestion.findMany({});
 
     res.render("quick-questions", {
       successMessage: successMessage,
@@ -424,7 +449,7 @@ app.get(
   adminLogged,
   async (req: Request, res: Response) => {
     let id = req.params.id;
-    await QuickQuestion.destroy({ where: { id: id } });
+    await prisma.QuickQuestion.destroy({ where: { id: id } });
     req.flash("success", `Question Deleted`);
     res.redirect("/quick-questions");
   }
@@ -433,7 +458,7 @@ app.get("/edit-question", adminLogged, async (req: Request, res: Response) => {
   const successMessage = req.flash("success")[0];
   const errorMessage = req.flash("error")[0];
   const id = req.query.id;
-  const question_details = await QuickQuestion.findOne({
+  const question_details = await prisma.QuickQuestion.findFirst({
     where: {
       id: id,
     },
@@ -447,13 +472,13 @@ app.get("/edit-question", adminLogged, async (req: Request, res: Response) => {
 app.post("/quick-questions-edit", quickQuestionsEdit);
 app.get("/live-chats", agentLogged, async (req, res) => {
   //console.log(res.locals.agent_login_details.dataValues);
-  const chats = await ChatHeader.findAll({
+  const chats = await prisma.ChatHeader.findMany({
     where: {
       agent: "unassigned",
       status: "live",
     },
   });
-  const languages = await AgentLanguages.findAll({
+  const languages = await prisma.AgentLanguages.findMany({
     where: {
       user_id: res.locals.agent_login_details.dataValues.id,
     },

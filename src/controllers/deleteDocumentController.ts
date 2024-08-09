@@ -15,7 +15,7 @@ export const deleteDocument = async (req: Request, res: Response) => {
     const ns = index.namespace('thyaga-data')
     await ns.deleteOne(`${id}`);
 
-    const row = await File.findOne({ where: { file_id: req.query.id }, }); 
+    const row = await prisma.File.deleteMany({ where: { file_id: req.query.id }, }); 
     if (row) { 
         await row.destroy(); 
     }

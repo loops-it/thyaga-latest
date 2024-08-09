@@ -48,10 +48,12 @@ export const uploadDocuments = async (req: Request, res: Response, next: Functio
         }
       ]);
 
-      await File.create({
+      await prisma.File.create({
+    data: {
       user_id: decode.id,
       file_id: uniqueId,
-    })
+    },
+  });
     res.send('PDF upload successful.');
       }
       // const parsedData = await pdfParse(req.file.path);
@@ -79,10 +81,12 @@ export const uploadDocuments = async (req: Request, res: Response, next: Functio
         }
       ]);
 
-      await File.create({
-      user_id: decode.id,
-      file_id: uniqueId,
-    })
+      await prisma.File.create({
+        data: {
+          user_id: decode.id,
+          file_id: uniqueId,
+        },
+      });
     res.send('PDF upload successful.');
     }
     } catch (error) {
