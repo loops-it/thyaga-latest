@@ -137,7 +137,7 @@ export const chatAudioResponse = async (
       chatHistory[lastUserIndex].content = translatedQuestion;
       // console.log(chatHistory);
     }
-    await BotChats.create({
+    await botChats.create({
       data: {
         message_id: userChatId,
         language: language,
@@ -276,7 +276,7 @@ export const chatAudioResponse = async (
       audioSrc = `data:audio/mp3;base64,${audioContent}`;
     }
 
-    await BotChats.create({
+    await botChats.create({
       data: {
         message_id: userChatId,
         language: language,

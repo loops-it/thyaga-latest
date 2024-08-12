@@ -14,14 +14,14 @@ interface UserDecodedToken extends JwtPayload {
 export const LiveChatHistoryOnload = async (req: Request, res: Response, next: NextFunction) => {
     const {agent_id,profile_picture} = req.body
     var chat = ''
-    const chats  = await prisma.ChatHeader.findMany({
+    const chats  = await prisma.chatHeader.findMany({
         where: {
             "agent" : agent_id,
         },
       });
 
     for (var i = 0; i < chats.length; i++) {
-        const lastMessage = await prisma.LiveChat.findFirst({
+        const lastMessage = await prisma.liveChat.findFirst({
             where: {
               message_id: chats[i].message_id,
             },
@@ -49,7 +49,7 @@ export const LiveChatHistoryOnload = async (req: Request, res: Response, next: N
 export const LiveChatHistoryMessages = async (req: Request, res: Response, next: NextFunction) => {
     const {agent_id,profile_picture,message_id} = req.body;
     var chat = ''
-      const chats = await prisma.LiveChat.findMany({
+      const chats = await prisma.liveChat.findMany({
         where: {
           message_id: message_id
         },
@@ -121,13 +121,13 @@ export const LiveChatHistoryRefresh = async (req: Request, res: Response, next: 
 
     const {agent_id,profile_picture} = req.body
     var chat = ''
-    const chats = await prisma.ChatHeader.findMany({
+    const chats = await prisma.chatHeader.findMany({
       where: {
           agent: agent_id
       }
     });
     for (var i = 0; i < chats.length; i++) {
-        const lastMessage = await prisma.LiveChat.findFirst({
+        const lastMessage = await prisma.liveChat.findFirst({
           where: {
             message_id: chats[i].message_id,
           },
@@ -156,7 +156,7 @@ export const LiveChatHistoryRefreshMessages = async (req: Request, res: Response
 
   const {profile_picture,message_id} = req.body
   var chat = ''
-  const chats = await prisma.LiveChat.findMany({
+  const chats = await prisma.liveChat.findMany({
     where: {
       message_id: message_id
     },

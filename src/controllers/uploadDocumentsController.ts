@@ -48,7 +48,7 @@ export const uploadDocuments = async (req: Request, res: Response, next: Functio
         }
       ]);
 
-      await prisma.File.create({
+      await prisma.file.create({
     data: {
       user_id: decode.id,
       file_id: uniqueId,
@@ -81,7 +81,7 @@ export const uploadDocuments = async (req: Request, res: Response, next: Functio
         }
       ]);
 
-      await prisma.File.create({
+      await prisma.file.create({
         data: {
           user_id: decode.id,
           file_id: uniqueId,

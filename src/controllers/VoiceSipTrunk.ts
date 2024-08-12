@@ -138,7 +138,7 @@ export const VoiceSipTrunkBotResponce = async (
       chatHistory[lastUserIndex].content = translatedQuestion;
       // console.log(chatHistory);
     }
-    await prisma.BotChats.create({
+    await prisma.botChats.create({
       data: {
         message_id: userChatId,
         language: language,
@@ -277,7 +277,7 @@ export const VoiceSipTrunkBotResponce = async (
       audioSrc = `data:audio/mp3;base64,${audioContent}`;
     }
 
-    await prisma.BotChats.create({
+    await prisma.botChats.create({
       data: {
         message_id: userChatId,
         language: language,

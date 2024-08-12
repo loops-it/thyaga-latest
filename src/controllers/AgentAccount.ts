@@ -8,7 +8,7 @@ export const agentCreateAccount = async (req: Request, res: Response) => {
     const {name, phone, email, password, language} = req.body;
     console.log(req.body);
     try {
-        const email_exist = await prisma.User.findFirst({
+        const email_exist = await prisma.user.findFirst({
           where: {
           email : email,
           },
@@ -19,7 +19,7 @@ export const agentCreateAccount = async (req: Request, res: Response) => {
       }
       else{
           const crypt_password = await (bcrypt.hash(password, 10));
-          let user = await prisma.User.create({
+          let user = await prisma.user.create({
             data: {
               email: email,
               password: crypt_password,
@@ -27,7 +27,7 @@ export const agentCreateAccount = async (req: Request, res: Response) => {
               status: "active",
             },
           });
-          await prisma.Agent.create({
+          await prisma.agent.create({
             data: {
               user_id: user.id,
               name: name,
@@ -37,7 +37,7 @@ export const agentCreateAccount = async (req: Request, res: Response) => {
             },
           });
             for (var i = 0; i < language.length; i++) {
-                await prisma.AgentLanguages.create({
+                await prisma.agentLanguages.create({
                   data: {
                     user_id: user.id,
                     language: language,
@@ -55,27 +55,27 @@ export const agentUpdateAccount = async (req: Request, res: Response, next: Func
   const {agent_name, phone, email, user_id,language} = req.body
 
   try {
-    const email_exist = await prisma.User.findFirst({
+    const email_exist = await prisma.user.findFirst({
       where: {
       email : email,
       },
     });
   if(email_exist[0]){
       if(email_exist[0].id == user_id){
-          await prisma.Agent.updateMany({
+          await prisma.agent.updateMany({
             where: { user_id: user_id },
             data: { name: agent_name, phone: phone },
           });
             
-          await prisma.User.updateMany({
+          await prisma.user.updateMany({
             where: { id: user_id },
             data: { email: email },
           });
-          await prisma.AgentLanguages.deleteMany({
+          await prisma.agentLanguages.deleteMany({
               where: { user_id: user_id },
             });  
           for (var i = 0; i < language.length; i++) {
-              await prisma.AgentLanguages.create({
+              await prisma.agentLanguages.create({
                 data: {
                   user_id: user_id,
                   language: lang,
@@ -90,16 +90,16 @@ export const agentUpdateAccount = async (req: Request, res: Response, next: Func
       }    
   }
   else{
-      await prisma.Agent.updateMany({
+      await prisma.agent.updateMany({
         where: { user_id: user_id },
         data: { name: agent_name, phone: phone },
       });
-      await prisma.User.updateMany({
+      await prisma.user.updateMany({
         where: { id: user_id },
         data: { email: email },
       });
 
-      await prisma.AgentLanguages.deleteMany({
+      await prisma.agentLanguages.deleteMany({
         where: { user_id: user_id },
       });
       for (var i = 0; i < language.length; i++) {
@@ -122,26 +122,26 @@ export const agentUpdateWithPassword = async (req: Request, res: Response, next:
   const {agent_name, phone, email, user_id, password,language} = req.body
   const crypt_password = await (bcrypt.hash(password, 10));
   try {
-    const email_exist = prisma.User.findFirst({
+    const email_exist = prisma.user.findFirst({
       where: {
       email : email,
       },
     });
   if(email_exist[0]){
       if(email_exist[0].id == user_id){
-        await prisma.Agent.updateMany({
+        await prisma.agent.updateMany({
           where: { user_id: user_id },
           data: { name: agent_name, phone: phone },
         });
-          await prisma.User.updateMany({
+          await prisma.user.updateMany({
             where: { id: user_id },
             data: { email: email, password: crypt_password },
           });
-            await prisma.AgentLanguages.deleteMany({
+            await prisma.agentLanguages.deleteMany({
               where: { user_id: user_id },
             });
           for (var i = 0; i < language.length; i++) {
-              await prisma.AgentLanguages.create({
+              await prisma.agentLanguages.create({
                 data: {
                   user_id: user_id,
                   language: lang,
@@ -156,19 +156,19 @@ export const agentUpdateWithPassword = async (req: Request, res: Response, next:
       }    
   }
   else{
-    await prisma.Agent.updateMany({
+    await prisma.agent.updateMany({
       where: { user_id: user_id },
       data: { name: agent_name, phone: phone },
     });
-      await prisma.User.updateMany({
+      await prisma.user.updateMany({
         where: { id: user_id },
         data: { email: email, password: crypt_password },
       });
-        await prisma.AgentLanguages.deleteMany({
+        await prisma.agentLanguages.deleteMany({
           where: { user_id: user_id },
         });  
       for (var i = 0; i < language.length; i++) {
-          await prisma.AgentLanguages.create({
+          await prisma.agentLanguages.create({
             data: {
               user_id: user_id,
               language: lang,

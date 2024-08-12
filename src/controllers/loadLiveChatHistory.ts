@@ -24,17 +24,17 @@ export const loadLiveChatHistory = async (req: Request, res: Response, next: Nex
         </tr>
     </thead>
     <tbody>`
-    const agents = await prisma.Agent.findMany();
+    const agents = await prisma.agent.findMany();
 
     for (var i = 0; i < agents.length; i++) {
         const agent_id = agents[i].user_id
         const agent_name = agents[i].name
-        const chat_count = await prisma.ChatHeader.count({
+        const chat_count = await prisma.chatHeader.count({
           where: {
             agent: agent_id
           }
         });
-        const timer = await prisma.ChatTimer.findMany({
+        const timer = await prisma.chatTimer.findMany({
           where: {
             agent: agent_id
           }

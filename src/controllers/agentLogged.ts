@@ -18,7 +18,7 @@ export const agentLogged = async (req: Request, res: Response, next: NextFunctio
     try {
         const decode = jwt.verify(req.cookies.agentLoggedIn, "lkasdh23123h2ljqwher31414l312423") as UserDecodedToken;
     
-        const user = await User.findOne({
+        const user = await user.findOne({
           where: {
             "id" : decode.id,
           },

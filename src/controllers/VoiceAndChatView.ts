@@ -5,7 +5,7 @@ import QuickQuestion from '../../models/QuickQuestion';
 const router = express.Router();
 
 router.get('/voice-and-chat-bot', async (req: Request, res: Response) => {
-    const questions  = await QuickQuestion.findAll({});
+    const questions  = await prisma.quickQuestion.findAll({});
     res.render('intergratedBot',{questions: questions});
 });
 

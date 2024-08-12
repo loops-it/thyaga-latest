@@ -15,21 +15,21 @@ interface UserDecodedToken extends JwtPayload {
 export const botChatsOnload = async (req: Request, res: Response, next: NextFunction) => {
 
     var chat = ''
-    const chats = await prisma.BotChats.findMany({
+    const chats = await prisma.botChats.findMany({
         attributes: ['message_id'],
         group: ['message_id'],
         order: [['id', 'DESC']],
         limit: 20,
     });
     for (var i = 0; i < chats.length; i++) {
-        const newMessageCount = await prisma.BotChats.count({
+        const newMessageCount = await prisma.botChats.count({
             where: {
               viewed_by_admin: 'no',
               message_id: chats[i].message_id,
             },
 
           });
-          const lastMessage = await prisma.BotChats.findFirst({
+          const lastMessage = await prisma.botChats.findFirst({
             where: {
               message_id: chats[i].message_id,
             },
@@ -59,11 +59,11 @@ export const botChatsOnload = async (req: Request, res: Response, next: NextFunc
 export const botChatsGetMessages = async (req: Request, res: Response, next: NextFunction) => {
 const {message_id} = req.body
 
-prisma.BotChats.updateMany({
+prisma.botChats.updateMany({
   where: { message_id: message_id},
   data: { viewed_by_admin: 'yes'},
 });
-const chats  = await prisma.BotChats.findMany({
+const chats  = await prisma.botChats.findMany({
     where: {
         "message_id" : message_id,
     },
@@ -137,19 +137,19 @@ return res.json({status:"success", message:message_history})
 export const botChatsRefresh = async (req: Request, res: Response, next: NextFunction) => {
 
     var chat = ''
-    const chats = await prisma.BotChats.findMany({
+    const chats = await prisma.botChats.findMany({
         attributes: ['message_id'],
         group: ['message_id']
     });
     for (var i = 0; i < chats.length; i++) {
-        const newMessageCount = await prisma.BotChats.count({
+        const newMessageCount = await prisma.botChats.count({
             where: {
               viewed_by_admin: 'no',
               message_id: chats[i].message_id,
             },
 
           });
-          const lastMessage = await prisma.BotChats.findFirst({
+          const lastMessage = await prisma.botChats.findFirst({
             where: {
               message_id: chats[i].message_id,
             },
@@ -178,12 +178,12 @@ export const botChatsRefresh = async (req: Request, res: Response, next: NextFun
 
 export const botChatsRefreshMessage = async (req: Request, res: Response, next: NextFunction) => {
     const {message_id} = req.body
-    await prisma.BotChats.updateMany({
+    await prisma.botChats.updateMany({
       where: { message_id: message_id},
       data: { viewed_by_admin: 'yes'},
     });
     var message_history = ''
-    const chats  = await prisma.BotChats.findMany({
+    const chats  = await prisma.botChats.findMany({
         where: {
             "message_id" : message_id,
         },

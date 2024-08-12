@@ -11,7 +11,7 @@ export const quickQuestionsAdd = async (req: Request, res: Response, next: Funct
     let question = req.body.question;
     let answer = req.body.answer;
     try {
-      await prisma.QuickQuestion.create({
+      await prisma.quickQuestion.create({
         data: {
           question: question,
           answer: answer,
@@ -32,7 +32,7 @@ export const quickQuestionsAdd = async (req: Request, res: Response, next: Funct
     let id = req.body.id;
     try {
 
-      await prisma.QuickQuestion.update({
+      await prisma.quickQuestion.update({
         where: {
           id: id, 
         },

@@ -15,28 +15,28 @@ export const liveChatsOnload = async (req: Request, res: Response, next: NextFun
 
     var chat = ''
     let agent_id = req.body.agent_id;
-    const chats  = await prisma.ChatHeader.findMany({
+    const chats  = await prisma.chatHeader.findMany({
         where: {
             "agent" : "unassigned",
             "status" : "live",
         },
         order: [['id', 'DESC']]
       });
-    const languages  = await prisma.AgentLanguages.findMany({
+    const languages  = await prisma.agentLanguages.findMany({
         where: {
             "user_id" : agent_id,
         },
     });
 
     for (var i = 0; i < chats.length; i++) {
-        const newMessageCount = await prisma.LiveChat.count({
+        const newMessageCount = await prisma.liveChat.count({
             where: {
               viewed_by_agent: 'no',
               message_id: chats[i].message_id,
             },
 
           });
-          const lastMessage = await prisma.LiveChat.findFirst({
+          const lastMessage = await prisma.liveChat.findFirst({
             where: {
               message_id: chats[i].message_id,
             },
@@ -78,28 +78,28 @@ export const refreshLiveChats = async (req: Request, res: Response, next: NextFu
 
   var chat = ''
   let agent_id = req.body.agent_id;
-  const chats  = await prisma.ChatHeader.findMany({
+  const chats  = await prisma.chatHeader.findMany({
       where: {
           "agent" : "unassigned",
           "status" : "live",
       },
       order: [['id', 'DESC']]
     });
-  const languages  = await prisma.AgentLanguages.findMany({
+  const languages  = await prisma.agentLanguages.findMany({
       where: {
           "user_id" : agent_id,
       },
   });
 
   for (var i = 0; i < chats.length; i++) {
-      const newMessageCount = await prisma.LiveChat.count({
+      const newMessageCount = await prisma.liveChat.count({
           where: {
             viewed_by_agent: 'no',
             message_id: chats[i].message_id,
           },
 
         });
-        const lastMessage = await prisma.LiveChat.findAll({
+        const lastMessage = await prisma.liveChat.findAll({
           where: {
             message_id: chats[i].message_id,
           },
@@ -141,19 +141,19 @@ export const replyLiveChats = async (req: Request, res: Response, next: NextFunc
   let agent_id = req.body.agent_id;
   let message_id = req.body.message_id;
 
-  await prisma.LiveChat.updateMany(
+  await prisma.liveChat.updateMany(
     { viewed_by_agent: 'yes' },
     { where: { message_id: message_id } }
   );
 
   var message_history = ''
 
-  await prisma.ChatHeader.updateMany(
+  await prisma.chatHeader.updateMany(
     { agent: agent_id },
     { where: { message_id: message_id } }
   );
 
-  const chats  = await prisma.LiveChat.findMany({
+  const chats  = await prisma.liveChat.findMany({
     where: {
         "message_id" : message_id,
     },
@@ -237,7 +237,7 @@ export const sendReplyLiveChats = async (req: Request, res: Response, next: Next
   let reply_message = req.body.reply_message;
   let message_id = req.body.message_id;
 
-  await prisma.LiveChat.create({
+  await prisma.liveChat.create({
     data: {
       message_id: message_id,
       sent_by: "agent",
@@ -252,7 +252,7 @@ export const closeLiveChats = async (req: Request, res: Response, next: NextFunc
 
   let message_id = req.body.chatId;
 
-  await prisma.ChatHeader.updateMany({
+  await prisma.chatHeader.updateMany({
     where: { message_id: message_id},
     data: { status: "closed" },
   });
@@ -263,13 +263,13 @@ export const refreshLiveChatInner = async (req: Request, res: Response, next: Ne
   let message_id = req.body.message_id;
   let agent_id = req.body.agent_id;
   
-  const timer  = await prisma.ChatTimer.findMany({
+  const timer  = await prisma.chatTimer.findMany({
     where: {
         "message_id" : message_id,
     }
   });
   if(!timer[0]){
-    await prisma.ChatTimer.create({
+    await prisma.chatTimer.create({
       data: {
         message_id: message_id,
         agent: agent_id,
@@ -278,13 +278,13 @@ export const refreshLiveChatInner = async (req: Request, res: Response, next: Ne
     });
   }
   else{
-    await prisma.ChatTimer.updateMany({
+    await prisma.chatTimer.updateMany({
       where: { message_id: message_id},
       data: { time: timer[0].time+1 },
     });
   }
   var message_history = ''
-  const chats  = await prisma.LiveChat.findMany({
+  const chats  = await prisma.liveChat.findMany({
     where: {
         "message_id" : message_id,
     },

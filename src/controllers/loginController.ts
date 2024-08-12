@@ -17,7 +17,7 @@ export const login = async (req: Request, res: Response, next: Function) => {
     let email = req.body.email;
     let password = req.body.password;
     try {
-      const user = await prisma.User.findFirst({
+      const user = await prisma.user.findFirst({
         where: {
         email,
         "user_role" : "1",
@@ -58,7 +58,7 @@ export const login = async (req: Request, res: Response, next: Function) => {
     let email = req.body.email;
     let password = req.body.password;
     try {
-      const user = await prisma.User.findFirst({
+      const user = await prisma.user.findFirst({
         where: {
         email,
         "user_role" : "2",

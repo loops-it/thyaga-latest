@@ -23,7 +23,7 @@ export const adminLogged = async (req: Request, res: Response, next: NextFunctio
     try {
         const decode = jwt.verify(req.cookies.adminLoggedIn, "lkasdh23123h2ljqwher31414l312423") as UserDecodedToken;
     
-        const user = await prisma.User.findFirst({
+        const user = await prisma.user.findFirst({
           where: {
             "id" : decode.id,
           },

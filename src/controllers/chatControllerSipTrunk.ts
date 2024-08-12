@@ -185,7 +185,7 @@ export const chatResponseSip = async (
       chatHistory[lastUserIndex].content = translatedQuestion;
       // console.log(chatHistory);
     }
-    await prisma.BotChats.create({
+    await prisma.botChats.create({
       data: {
         message_id: userChatId,
         language: language,
@@ -525,7 +525,7 @@ Do NOT make up any answers or provide information not relevant to the context us
     // }
     // await processRequest(translatedQuestion, userChatId);
 
-    await prisma.BotChats.create({
+    await prisma.botChats.create({
       data: {
         message_id: userChatId,
         language: language,
