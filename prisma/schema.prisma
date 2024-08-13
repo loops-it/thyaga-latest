@@ -260,3 +260,28 @@ model FlowFormSubmissions {
 
    @@map("flow_form_submissions")
 }
+
+model CustomizeBot {
+  id         Int       @id @default(autoincrement())
+  title   String
+  color     String
+  select_image String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+   @@map("customize_bot")
+}
+
+model quickQuestion {
+  id         Int       @id @default(autoincrement())
+  question   String
+  answer     String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+   @@map("quick_question")
+}
+
+
+
+ 

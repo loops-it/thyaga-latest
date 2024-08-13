@@ -157,11 +157,11 @@ export const liveChat = async (req: Request, res: Response, next: NextFunction) 
             let agent_name;
             let profile_picture;
             let agent_message;
-            const agent_details = await agent.findOne({
+            const agentDetails = await prisma.agent.findUnique({
                 where: {
-                    user_id: chat_header_result.agent,
-                }
-            });
+                  user_id: chat_header_result.agent,
+                },
+              });
             if (agent_details) {
                 agent_name = agent_details.name;
                 profile_picture = agent_details.profile_picture;
