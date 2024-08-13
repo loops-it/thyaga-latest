@@ -4,6 +4,10 @@ import User from '../../models/User';
 import Agent from '../../models/Agent';
 import AgentLanguages from '../../models/AgentLanguages';
 
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+ 
+
 export const agentCreateAccount = async (req: Request, res: Response) => {
     const {name, phone, email, password, language} = req.body;
     console.log(req.body);

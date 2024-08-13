@@ -3,6 +3,10 @@ import bcrypt from 'bcrypt';
 import User from '../../models/User';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+ 
+
 interface UserDecodedToken extends JwtPayload {
   id: string;
   

@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import User from '../../models/User';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 interface UserDecodedToken extends JwtPayload {
   id: string;
@@ -18,9 +20,9 @@ export const agentLogged = async (req: Request, res: Response, next: NextFunctio
     try {
         const decode = jwt.verify(req.cookies.agentLoggedIn, "lkasdh23123h2ljqwher31414l312423") as UserDecodedToken;
     
-        const user = await user.findOne({
+        const user = await prisma.user.findFirst({
           where: {
-            "id" : decode.id,
+            id: decode.id,
           },
         });
         if (!user) {

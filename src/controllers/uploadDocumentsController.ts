@@ -7,6 +7,8 @@ import { Pinecone } from '@pinecone-database/pinecone'
 import "dotenv/config";
 import File from '../../models/File';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 interface UserDecodedToken extends JwtPayload {
   id: string;

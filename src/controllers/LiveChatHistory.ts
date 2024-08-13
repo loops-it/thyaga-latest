@@ -6,6 +6,8 @@ import ChatHeader from '../../models/ChatHeader';
 import LiveChat from '../../models/LiveChat';
 import AgentLanguages from '../../models/AgentLanguages';
 import ChatTimer from '../../models/ChatTimer';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 interface UserDecodedToken extends JwtPayload {
   id: string;
   

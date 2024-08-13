@@ -5,6 +5,8 @@ import { Request as ExpressRequest, Response } from "express";
 import File from "../../models/File";
 import BotChats from "../../models/BotChats";
 import { Translate } from "@google-cloud/translate/build/src/v2";
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 // const speech = require("@google-cloud/speech");
 const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
 
@@ -137,7 +139,7 @@ export const chatAudioResponse = async (
       chatHistory[lastUserIndex].content = translatedQuestion;
       // console.log(chatHistory);
     }
-    await botChats.create({
+    await prisma.botChats.create({
       data: {
         message_id: userChatId,
         language: language,
@@ -276,7 +278,7 @@ export const chatAudioResponse = async (
       audioSrc = `data:audio/mp3;base64,${audioContent}`;
     }
 
-    await botChats.create({
+    await prisma.botChats.create({
       data: {
         message_id: userChatId,
         language: language,

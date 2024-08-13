@@ -5,6 +5,8 @@ import { Request as ExpressRequest, Response } from "express";
 import File from "../../models/File";
 import BotChats from "../../models/BotChats";
 import { Translate } from "@google-cloud/translate/build/src/v2";
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 // const speech = require("@google-cloud/speech");
 const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
 

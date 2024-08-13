@@ -6,6 +6,8 @@ import OpenAI from "openai";
 import { Pinecone } from '@pinecone-database/pinecone'
 import "dotenv/config";
 import QuickQuestion from '../../models/QuickQuestion';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 export const quickQuestionsAdd = async (req: Request, res: Response, next: Function) => {
     let question = req.body.question;

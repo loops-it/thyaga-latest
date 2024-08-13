@@ -2,6 +2,8 @@ import OpenAI from "openai";
 import { Request, Response } from 'express';
 import { Pinecone } from '@pinecone-database/pinecone';
 import "dotenv/config";
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 import File from '../../models/File';
 

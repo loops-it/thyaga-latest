@@ -12,6 +12,10 @@ import multer from "multer";
 import { OperationUsage } from "@pinecone-database/pinecone/dist/data/types";
 const upload = multer();
 
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+ 
+
 // ============= api keys import ====================
 const serviceAccountKey = {
   type: "service_account",

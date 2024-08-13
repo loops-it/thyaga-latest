@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { Pinecone } from '@pinecone-database/pinecone';
 import "dotenv/config";
 import File from '../../models/File';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 if (!process.env.PINECONE_API_KEY || typeof process.env.PINECONE_API_KEY !== 'string') {
     throw new Error('Pinecone API key is not defined or is not a string.');

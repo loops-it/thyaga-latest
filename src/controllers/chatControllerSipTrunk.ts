@@ -6,6 +6,8 @@ import File from "../../models/File";
 import BotChats from "../../models/BotChats";
 import { Translate } from "@google-cloud/translate/build/src/v2";
 const speech = require("@google-cloud/speech");
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 if (
