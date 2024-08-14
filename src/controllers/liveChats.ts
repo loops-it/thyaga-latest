@@ -141,6 +141,8 @@ export const replyLiveChats = async (req: Request, res: Response, next: NextFunc
 
   let agent_id = req.body.agent_id;
   let message_id = req.body.message_id;
+  
+  let agent_id_text = String(agent_id);
 
   await prisma.liveChat.updateMany({
     where: { message_id: message_id},

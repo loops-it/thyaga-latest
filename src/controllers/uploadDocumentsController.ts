@@ -49,10 +49,10 @@ export const uploadDocuments = async (req: Request, res: Response, next: Functio
           "metadata": {"Title": title, "Text": text, 'Category': category.toLowerCase().trim()}
         }
       ]);
-
+      let decode_id: number | undefined = parseInt(decode.id as string, 10);  
       await prisma.file.create({
     data: {
-      user_id: decode.id,
+      user_id: decode_id,
       file_id: uniqueId,
     },
   });
@@ -83,9 +83,10 @@ export const uploadDocuments = async (req: Request, res: Response, next: Functio
         }
       ]);
 
+      let decode_id: number | undefined = parseInt(decode.id as string, 10);
       await prisma.file.create({
         data: {
-          user_id: decode.id,
+          user_id: decode_id,
           file_id: uniqueId,
         },
       });

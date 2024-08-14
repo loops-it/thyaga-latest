@@ -210,7 +210,8 @@ app.get(
   "/deactivate-admin/:id",
   adminLogged,
   async (req: Request, res: Response) => {
-    let user_id = req.params.id;
+    let user_id =  parseInt(req.params.id, 10);;
+
     await prisma.admin.updateMany({
       where: { user_id: user_id },
       data: { status: "inactive" },
@@ -226,7 +227,7 @@ app.get(
   "/activate-admin/:id",
   adminLogged,
   async (req: Request, res: Response) => {
-    let user_id = req.params.id;
+let user_id =  parseInt(req.params.id, 10);
     await prisma.admin.updateMany({
       where: { user_id: user_id },
       data: { status: "active" },
@@ -239,7 +240,7 @@ app.get(
   }
 );
 app.get("/edit-admin", adminLogged, async (req: Request, res: Response) => {
-  const user_id = req.query.id;
+  let user_id: number | undefined = parseInt(req.query.id as string, 10);
 
   const admin_details = await prisma.admin.findFirst({
     where: {
@@ -296,7 +297,8 @@ app.get(
   "/view-agent-chats",
   adminLogged,
   async (req: Request, res: Response) => {
-    const agent_id = req.query.id;
+      let agent_id: number | undefined = parseInt(req.query.id as string, 10);
+      let agent_id_text: string = req.query.id as string;
 
     const agent = await  prisma.agent.findMany({
       where: {
@@ -305,7 +307,7 @@ app.get(
     });
     const chat_count = await  prisma.chatHeader.count({
       where: {
-        agent: agent_id,
+        agent: agent_id_text
       },
     });
     const timer = await  prisma.chatTimer.findMany({
@@ -315,7 +317,7 @@ app.get(
     });
     const chats = await prisma.chatHeader.findMany({
       where: {
-        agent: agent_id,
+        agent: agent_id_text,
       },
     });
     res.render("view-agent-chats", {
@@ -334,7 +336,9 @@ app.get(
   "/view-agent-feedbacks",
   adminLogged,
   async (req: Request, res: Response) => {
-    const agent_id = req.query.id;
+    let agent_id: number | undefined = parseInt(req.query.id as string, 10);
+    let agent_id_text: string = req.query.id as string;
+  
 
     const agent = await prisma.agent.findMany({
       where: {
@@ -343,9 +347,9 @@ app.get(
     });
     const chats = await prisma.chatHeader.findMany({
       where: {
-        agent: agent_id,
+        agent: agent_id_text,
         feedback: {
-          [Op.not]: null,
+          not: null,
         },
       },
     });
@@ -366,8 +370,7 @@ app.get("/manage-agents", adminLogged, async (req: Request, res: Response) => {
     "/deactivate-agent/:id",
     adminLogged,
     async (req: Request, res: Response) => {
-      let user_id = req.params.id;
-      await prisma.agent.updateMany({
+      let user_id =  parseInt(req.params.id, 10);;      await prisma.agent.updateMany({
         where: { user_id: user_id },
         data: { status: "inactive" },
       });
@@ -382,20 +385,20 @@ app.get("/manage-agents", adminLogged, async (req: Request, res: Response) => {
     "/activate-agent/:id",
     adminLogged,
     async (req: Request, res: Response) => {
-      let user_id = req.params.id;
+      let user_id =  parseInt(req.params.id, 10);;
       await prisma.agent.updateMany({
         where: { user_id: user_id },
         data: { status: "active" },
       });
       await prisma.user.updateMany({
-        where: { user_id: user_id },
+        where: { id: user_id },
         data: { status: "active" },
       });
       res.redirect("/manage-agents");
     }
   );
   app.get("/edit-agent", adminLogged, async (req: Request, res: Response) => {
-    const user_id = req.query.id;
+    let user_id: number | undefined = parseInt(req.query.id as string, 10);
 
     const agent_details = await prisma.agent.findFirst({
       where: {
@@ -448,8 +451,8 @@ app.get(
   "/delete-question/:id",
   adminLogged,
   async (req: Request, res: Response) => {
-    let id = req.params.id;
-    await prisma.quickQuestion.destroy({ where: { id: id } });
+    const id = parseInt(req.params.id, 10);
+    await prisma.quickQuestion.delete({ where: { id: id } });
     req.flash("success", `Question Deleted`);
     res.redirect("/quick-questions");
   }
@@ -457,7 +460,7 @@ app.get(
 app.get("/edit-question", adminLogged, async (req: Request, res: Response) => {
   const successMessage = req.flash("success")[0];
   const errorMessage = req.flash("error")[0];
-  const id = req.query.id;
+  const id = parseInt(req.query.id as string, 10);
   const question_details = await prisma.quickQuestion.findFirst({
     where: {
       id: id,

@@ -15,6 +15,7 @@ interface UserDecodedToken extends JwtPayload {
 
 export const LiveChatHistoryOnload = async (req: Request, res: Response, next: NextFunction) => {
     const {agent_id,profile_picture} = req.body
+    let agent_id_text = String(agent_id);
     var chat = ''
     const chats  = await prisma.chatHeader.findMany({
         where: {
@@ -29,14 +30,20 @@ export const LiveChatHistoryOnload = async (req: Request, res: Response, next: N
             },
             orderBy: { id: 'desc' }  });
 
-          const timestamp = new Date("'"+lastMessage[0].created_at+"'");
-          const time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });  
+            let time = "";
+        let message = "";
+
+        if(lastMessage){
+          const timestamp = new Date("'"+lastMessage.created_at+"'");
+          time = timestamp.toLocaleTimeString([], { timeStyle: 'short' }); 
+          message = lastMessage.message.slice(0, 30);
+        }
         chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up" onclick="GetLiveAllChats('`+chats[i].message_id+`')">
           <div class="d-flex align-items-center">
               <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="/uploads/`+profile_picture+`" alt="..."></a>
               <div>
                 <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
-                <p class="mb-0">`+lastMessage[0].message.slice(0, 30)+` ...</p>
+                <p class="mb-0">`+message.slice(0, 30)+` ...</p>
               </div>
           </div>
           <div class="text-end">
@@ -134,14 +141,22 @@ export const LiveChatHistoryRefresh = async (req: Request, res: Response, next: 
           },
           orderBy: { id: 'desc' }  });
 
-        const timestamp = new Date("'"+lastMessage[0].created_at+"'");
-        const time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });  
+          let time = "";
+      let message = "";
+
+       
+      if(lastMessage){
+        const timestamp = new Date("'"+lastMessage.created_at+"'");
+        time = timestamp.toLocaleTimeString([], { timeStyle: 'short' }); 
+        message = lastMessage.message.slice(0, 30);
+      }
+       
       chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up" onclick="GetLiveAllChats('`+chats[i].message_id+`')">
         <div class="d-flex align-items-center">
             <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="/uploads/`+profile_picture+`" alt="..."></a>
             <div>
               <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
-              <p class="mb-0">`+lastMessage[0].message.slice(0, 30)+` ...</p>
+              <p class="mb-0">`+message.slice(0, 30)+` ...</p>
             </div>
         </div>
         <div class="text-end">
