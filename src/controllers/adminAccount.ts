@@ -9,10 +9,8 @@ import User from '../../models/User';
 import Admin from '../../models/Admin';
 import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
- 
 
 interface UserDecodedToken extends JwtPayload {
   id: string;

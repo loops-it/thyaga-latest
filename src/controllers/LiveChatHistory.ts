@@ -27,9 +27,9 @@ export const LiveChatHistoryOnload = async (req: Request, res: Response, next: N
             where: {
               message_id: chats[i].message_id,
             },
-            order: [['id', 'DESC']],
-          });
-          const timestamp = new Date("'"+lastMessage[0].createdAt+"'");
+            orderBy: { id: 'desc' }  });
+
+          const timestamp = new Date("'"+lastMessage[0].created_at+"'");
           const time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });  
         chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up" onclick="GetLiveAllChats('`+chats[i].message_id+`')">
           <div class="d-flex align-items-center">
@@ -55,8 +55,7 @@ export const LiveChatHistoryMessages = async (req: Request, res: Response, next:
         where: {
           message_id: message_id
         },
-        order: [['id', 'ASC']]
-      });
+        orderBy: { id: 'asc' }  });
       chat += ` <div class="box">
       <div class="box-body px-20 py-10 bb-1 bbsr-0 bber-0">
         <div class="d-md-flex d-block justify-content-between align-items-center w-p100">
@@ -72,7 +71,7 @@ export const LiveChatHistoryMessages = async (req: Request, res: Response, next:
       <div class="box-body mb-30">
           <div class="chat-box-six">`
           for (var i = 0; i < chats.length; i++) {
-              const timestamp = new Date("'"+chats[i].createdAt+"'");
+              const timestamp = new Date("'"+chats[i].created_at+"'");
               const formattedDateTime = timestamp.toLocaleString();   
               if(chats[i].sent_by == "customer"){
                 chat += `<div class="rt-bx mb-30 d-flex align-items-start w-p100">
@@ -133,9 +132,9 @@ export const LiveChatHistoryRefresh = async (req: Request, res: Response, next: 
           where: {
             message_id: chats[i].message_id,
           },
-          order: [['id', 'DESC']],
-        });
-        const timestamp = new Date("'"+lastMessage[0].createdAt+"'");
+          orderBy: { id: 'desc' }  });
+
+        const timestamp = new Date("'"+lastMessage[0].created_at+"'");
         const time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });  
       chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up" onclick="GetLiveAllChats('`+chats[i].message_id+`')">
         <div class="d-flex align-items-center">
@@ -162,8 +161,8 @@ export const LiveChatHistoryRefreshMessages = async (req: Request, res: Response
     where: {
       message_id: message_id
     },
-    order: [['id', 'ASC']]
-  });
+   orderBy: { id: 'asc' }  });
+
   chat += ` <div class="box">
   <div class="box-body px-20 py-10 bb-1 bbsr-0 bber-0">
     <div class="d-md-flex d-block justify-content-between align-items-center w-p100">
@@ -179,7 +178,7 @@ export const LiveChatHistoryRefreshMessages = async (req: Request, res: Response
   <div class="box-body mb-30">
       <div class="chat-box-six">`
       for (var i = 0; i < chats.length; i++) {
-          const timestamp = new Date("'"+chats[i].createdAt+"'");
+          const timestamp = new Date("'"+chats[i].created_at+"'");
           const formattedDateTime = timestamp.toLocaleString();   
           if(chats[i].sent_by == "customer"){
             chat += `<div class="rt-bx mb-30 d-flex align-items-start w-p100">
