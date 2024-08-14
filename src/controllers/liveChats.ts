@@ -22,8 +22,8 @@ export const liveChatsOnload = async (req: Request, res: Response, next: NextFun
             "agent" : "unassigned",
             "status" : "live",
         },
-        order: [['id', 'DESC']]
-      });
+        orderBy: { id: 'desc' }  });
+
     const languages  = await prisma.agentLanguages.findMany({
         where: {
             "user_id" : agent_id,
@@ -42,15 +42,14 @@ export const liveChatsOnload = async (req: Request, res: Response, next: NextFun
             where: {
               message_id: chats[i].message_id,
             },
-            order: [['id', 'DESC']],
-          });
+           orderBy: { id: 'desc' }  });
           
           let time = "";
           let message = "";
-          if(lastMessage[0]){
-            const timestamp = new Date(`${lastMessage[0].createdAt}`);
+          if(lastMessage){
+            const timestamp = new Date(`${lastMessage.created_at}`);
             time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });
-            message = lastMessage[0].message.slice(0, 30);
+            message = lastMessage.message.slice(0, 30);
           }
         for (var c = 0; c < languages.length; c++){
             if(languages[c].language == chats[i].language){
@@ -85,8 +84,8 @@ export const refreshLiveChats = async (req: Request, res: Response, next: NextFu
           "agent" : "unassigned",
           "status" : "live",
       },
-      order: [['id', 'DESC']]
-    });
+      orderBy: { id: 'desc' }  });
+
   const languages  = await prisma.agentLanguages.findMany({
       where: {
           "user_id" : agent_id,
@@ -101,18 +100,18 @@ export const refreshLiveChats = async (req: Request, res: Response, next: NextFu
           },
 
         });
-        const lastMessage = await prisma.liveChat.findAll({
+        const lastMessage = await prisma.liveChat.findFirst({
           where: {
             message_id: chats[i].message_id,
           },
-          order: [['id', 'DESC']],
-        });
+          orderBy: { id: 'desc' }  });
+
         let time = "";
         let message = "";
-        if(lastMessage[0]){
-          const timestamp = new Date(`${lastMessage[0].createdAt}`);
+        if(lastMessage){
+          const timestamp = new Date(`${lastMessage.created_at}`);
           time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });
-          message = lastMessage[0].message.slice(0, 30);
+          message = lastMessage.message.slice(0, 30);
         }
         
       for (var c = 0; c < languages.length; c++){
@@ -143,24 +142,23 @@ export const replyLiveChats = async (req: Request, res: Response, next: NextFunc
   let agent_id = req.body.agent_id;
   let message_id = req.body.message_id;
 
-  await prisma.liveChat.updateMany(
-    { viewed_by_agent: 'yes' },
-    { where: { message_id: message_id } }
-  );
+  await prisma.liveChat.updateMany({
+    where: { message_id: message_id},
+    data: { viewed_by_agent: 'yes'},
+  }); 
 
   var message_history = ''
 
-  await prisma.chatHeader.updateMany(
-    { agent: agent_id },
-    { where: { message_id: message_id } }
-  );
+  await prisma.chatHeader.updateMany({
+    where: { message_id: message_id},
+    data: { agent: agent_id_text},
+  });
 
   const chats  = await prisma.liveChat.findMany({
     where: {
         "message_id" : message_id,
     },
-    order: [['id', 'ASC']],
-  });
+    orderBy: { id: 'asc' }  });
 
   message_history += `<div class="chatbox" id="main-chat-`+message_id+`">
   <div class="chatbox-top">
@@ -174,7 +172,7 @@ export const replyLiveChats = async (req: Request, res: Response, next: NextFunc
   <div class="chat-messages  inner-live-chats" id="live-chat-inner-`+message_id+`" data-id="`+message_id+`">`
 
   for (var i = 0; i < chats.length; i++) {
-    const timestamp = new Date("'"+chats[i].createdAt+"'");
+    const timestamp = new Date("'"+chats[i].created_at+"'");
     const formattedDateTime = timestamp.toLocaleString(); 
     if(chats[i].sent_by == "customer"){
         message_history += `<div class="chat-msg user">
@@ -290,10 +288,10 @@ export const refreshLiveChatInner = async (req: Request, res: Response, next: Ne
     where: {
         "message_id" : message_id,
     },
-    order: [['id', 'ASC']],
-  });
+    orderBy: { id: 'asc' }  });
+
   for (var i = 0; i < chats.length; i++) {
-    const timestamp = new Date("'"+chats[i].createdAt+"'");
+    const timestamp = new Date("'"+chats[i].created_at+"'");
     const formattedDateTime = timestamp.toLocaleString(); 
     if(chats[i].sent_by == "customer"){
         message_history += `<div class="chat-msg user">

@@ -22,7 +22,7 @@ export const login = async (req: Request, res: Response, next: Function) => {
       const user = await prisma.user.findFirst({
         where: {
           email: email,
-          user_role: "1",
+          user_role: 1,
           status: "active",
         },
       });
@@ -63,7 +63,7 @@ export const login = async (req: Request, res: Response, next: Function) => {
       const user = await prisma.user.findFirst({
         where: {
           email,
-          user_role: "2",  
+          user_role: 2,  
           status: "active",
         },
       });
