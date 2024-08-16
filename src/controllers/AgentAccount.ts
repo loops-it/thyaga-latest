@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import User from '../../models/User';
 import Agent from '../../models/Agent';
 import AgentLanguages from '../../models/AgentLanguages';
-
+import { put } from '@vercel/blob';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
  
@@ -17,7 +17,7 @@ export const agentCreateAccount = async (req: Request, res: Response) => {
           email : email,
           },
         });
-      if(email_exist[0]){
+      if(email_exist){
 
         return res.json({status:"failed", message:`Email has already registered`})
       }
@@ -40,14 +40,16 @@ export const agentCreateAccount = async (req: Request, res: Response) => {
               profile_picture:"agent.png",
             },
           });
-            for (var i = 0; i < language.length; i++) {
-                await prisma.agentLanguages.create({
-                  data: {
-                    user_id: user.id,
-                    language: language,
-                  },
-                });
-            }
+
+          const languagesArray = language.split(',');
+          for (const language of languagesArray) { 
+            await prisma.agentLanguages.create({
+              data: {
+                user_id: user.id,
+                language: language,
+              },
+            });
+          }
             return res.json({status:"success", message:"Agent Added"})
       }
       } catch (error) {
@@ -56,37 +58,47 @@ export const agentCreateAccount = async (req: Request, res: Response) => {
 };
 
 export const agentUpdateAccount = async (req: Request, res: Response, next: Function) => {
-  const {agent_name, phone, email, user_id,language} = req.body
-
+  const {name, phone, email,language} = req.body
+  const languagesArray = language.split(',');
+  let user_id: number | undefined = parseInt(req.body.user_id as string, 10);
   try {
     const email_exist = await prisma.user.findFirst({
-      where: {
-      email : email,
-      },
+      where: { email: email },
     });
-  if(email_exist[0]){
-      if(email_exist[0].id == user_id){
+  if(email_exist){
+      if(email_exist.id == user_id){
+        if (req.file) {
+          const file = req.file;
+          const blob = await put(file.originalname, file.buffer, { access: 'public',token:process.env.BLOB_READ_WRITE_TOKEN });
+          const profile_picture = blob.url
           await prisma.agent.updateMany({
             where: { user_id: user_id },
-            data: { name: agent_name, phone: phone },
+            data: { name: name,phone: phone, profile_picture : profile_picture},
           });
-            
-          await prisma.user.updateMany({
-            where: { id: user_id },
-            data: { email: email },
+        }
+        else{
+          await prisma.agent.updateMany({
+            where: { user_id: user_id },
+            data: { name: name,phone: phone},
           });
+        }
+            await prisma.user.updateMany({
+              where: { id: user_id },
+              data: { email: email},
+            });
           await prisma.agentLanguages.deleteMany({
               where: { user_id: user_id },
-            });  
-          for (var i = 0; i < language.length; i++) {
+          });
+    
+            for (const language of languagesArray) {
               await prisma.agentLanguages.create({
                 data: {
                   user_id: user_id,
-                  language: lang,
+                  language: language,
                 },
               });
             }
-          });
+            
           return res.json({status:"success", message:"Agent Updated"})
       }
       else{
@@ -94,27 +106,37 @@ export const agentUpdateAccount = async (req: Request, res: Response, next: Func
       }    
   }
   else{
-      await prisma.agent.updateMany({
-        where: { user_id: user_id },
-        data: { name: agent_name, phone: phone },
-      });
-      await prisma.user.updateMany({
-        where: { id: user_id },
-        data: { email: email },
-      });
+            if (req.file) {
+              const file = req.file;
+              const blob = await put(file.originalname, file.buffer, { access: 'public',token:process.env.BLOB_READ_WRITE_TOKEN });
+              const profile_picture = blob.url
+              await prisma.agent.updateMany({
+                where: { user_id: user_id },
+                data: { name: name,phone: phone, profile_picture : profile_picture},
+              });
+            }
+            else{
+              await prisma.agent.updateMany({
+                where: { user_id: user_id },
+                data: { name: name,phone: phone},
+              });
+            }
 
-      await prisma.agentLanguages.deleteMany({
-        where: { user_id: user_id },
-      });
-      for (var i = 0; i < language.length; i++) {
-          await prisma.AgentLanguages.create({
-            data: {
-              user_id: user_id,
-              language: lang,
-            },
+            await prisma.user.updateMany({
+              where: { id: user_id },
+              data: { email: email},
+            });
+          await prisma.agentLanguages.deleteMany({
+              where: { user_id: user_id },
           });
-        }
-      });
+          for (const language of languagesArray) {
+            await prisma.agentLanguages.create({
+              data: {
+                user_id: user_id,
+                language: language,
+              },
+            });
+          }
       return res.json({status:"success", message:"Agent Updated"})
   }
   } catch (error) {
@@ -123,36 +145,46 @@ export const agentUpdateAccount = async (req: Request, res: Response, next: Func
 };
 
 export const agentUpdateWithPassword = async (req: Request, res: Response, next: Function) => {
-  const {agent_name, phone, email, user_id, password,language} = req.body
+  const {name, phone, email, password,language} = req.body
+  const languagesArray = language.split(',');
+  let user_id: number | undefined = parseInt(req.body.user_id as string, 10);
   const crypt_password = await (bcrypt.hash(password, 10));
   try {
-    const email_exist = prisma.user.findFirst({
-      where: {
-      email : email,
-      },
+    const email_exist = await prisma.user.findFirst({
+      where: { email: email },
     });
-  if(email_exist[0]){
-      if(email_exist[0].id == user_id){
-        await prisma.agent.updateMany({
-          where: { user_id: user_id },
-          data: { name: agent_name, phone: phone },
-        });
-          await prisma.user.updateMany({
-            where: { id: user_id },
-            data: { email: email, password: crypt_password },
+  if(email_exist){
+      if(email_exist.id == user_id){
+        if (req.file) {
+          const file = req.file;
+          const blob = await put(file.originalname, file.buffer, { access: 'public',token:process.env.BLOB_READ_WRITE_TOKEN });
+          const profile_picture = blob.url
+          await prisma.agent.updateMany({
+            where: { user_id: user_id },
+            data: { name: name,phone: phone, profile_picture : profile_picture},
           });
+        }
+        else{
+          await prisma.agent.updateMany({
+            where: { user_id: user_id },
+            data: { name: name,phone: phone},
+          });
+        }
+            await prisma.user.updateMany({
+              where: { id: user_id },
+              data: { email: email,password: crypt_password},
+            });
             await prisma.agentLanguages.deleteMany({
               where: { user_id: user_id },
             });
           for (var i = 0; i < language.length; i++) {
-              await prisma.agentLanguages.create({
-                data: {
-                  user_id: user_id,
-                  language: lang,
-                },
-              });
-            }
-          });
+            await prisma.agentLanguages.create({
+              data: {
+                user_id: user_id,
+                language: language[i],
+              },
+            });
+          }
           return res.json({status:"success", message:"Agent Updated"})
       }
       else{
@@ -160,28 +192,44 @@ export const agentUpdateWithPassword = async (req: Request, res: Response, next:
       }    
   }
   else{
-    await prisma.agent.updateMany({
-      where: { user_id: user_id },
-      data: { name: agent_name, phone: phone },
-    });
-      await prisma.user.updateMany({
-        where: { id: user_id },
-        data: { email: email, password: crypt_password },
+    if (req.file) {
+      const file = req.file;
+      const blob = await put(file.originalname, file.buffer, { access: 'public',token:process.env.BLOB_READ_WRITE_TOKEN });
+      const profile_picture = blob.url
+      
+      await prisma.agent.updateMany({
+        where: { user_id: user_id },
+        data: { name: name,phone: phone, profile_picture : profile_picture},
       });
-        await prisma.agentLanguages.deleteMany({
-          where: { user_id: user_id },
-        });  
+    }
+    else{
+      await prisma.agent.updateMany({
+        where: { user_id: user_id },
+        data: { name: name,phone: phone},
+      });
+    }
+    await prisma.user.updateMany({
+      where: { id: user_id },
+      data: { email: email,password: crypt_password},
+    });
+    await prisma.agentLanguages.deleteMany({
+      where: { user_id: user_id },
+    });
       for (var i = 0; i < language.length; i++) {
-          await prisma.agentLanguages.create({
-            data: {
-              user_id: user_id,
-              language: lang,
-            },
-          });
-        }
+        await prisma.agentLanguages.create({
+          data: {
+            user_id: user_id,
+            language: language[i],
+          },
+        });
+      }
       return res.json({status:"success", message:"Agent Updated"})
   }
   } catch (error) {
     return res.json({status:"failed", message:`${error}`})
   }
 };
+function put(originalname: string, buffer: Buffer, arg2: { access: string; token: string | undefined; }) {
+  throw new Error('Function not implemented.');
+}
+

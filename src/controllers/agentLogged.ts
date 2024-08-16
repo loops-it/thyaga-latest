@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import User from '../../models/User';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -19,11 +20,10 @@ export const agentLogged = async (req: Request, res: Response, next: NextFunctio
     }
     try {
         const decode = jwt.verify(req.cookies.agentLoggedIn, "lkasdh23123h2ljqwher31414l312423") as UserDecodedToken;
+        let user_id =  parseInt(decode.id, 10);
     
         const user = await prisma.user.findFirst({
-          where: {
-            id: decode.id,
-          },
+          where: { id: user_id },
         });
         if (!user) {
             req.flash('error', 'You have to login first');

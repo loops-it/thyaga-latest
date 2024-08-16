@@ -26,11 +26,10 @@ export const adminLogged = async (req: Request, res: Response, next: NextFunctio
     }
     try {
         const decode = jwt.verify(req.cookies.adminLoggedIn, "lkasdh23123h2ljqwher31414l312423") as UserDecodedToken;
+        let user_id =  parseInt(decode.id, 10);
     
         const user = await prisma.user.findFirst({
-          where: {
-            "id" : decode.id,
-          },
+          where: { id: user_id },
         });
         if (!user) {
             req.flash('error', 'You have to login first');

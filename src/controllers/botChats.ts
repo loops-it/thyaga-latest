@@ -7,8 +7,10 @@ import LiveChat from '../../models/LiveChat';
 import AgentLanguages from '../../models/AgentLanguages';
 import ChatTimer from '../../models/ChatTimer';
 import BotChats from '../../models/BotChats';
+
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+
 interface UserDecodedToken extends JwtPayload {
   id: string;
   
@@ -16,13 +18,17 @@ interface UserDecodedToken extends JwtPayload {
 
 export const botChatsOnload = async (req: Request, res: Response, next: NextFunction) => {
 
-    var chat = ''
-    const chats = await prisma.botChats.findMany({
-        attributes: ['message_id'],
-        group: ['message_id'],
-        order: [['id', 'DESC']],
-        limit: 20,
-    });
+  var chat = ''
+
+  const chats = await prisma.botChats.findMany({
+    distinct: ['message_id'],
+    orderBy: { id: 'desc' }, 
+    take: 20, 
+    select: {
+      message_id: true,
+    },
+  });
+
     for (var i = 0; i < chats.length; i++) {
         const newMessageCount = await prisma.botChats.count({
             where: {
@@ -31,20 +37,30 @@ export const botChatsOnload = async (req: Request, res: Response, next: NextFunc
             },
 
           });
+          
           const lastMessage = await prisma.botChats.findFirst({
-            where: {
-              message_id: chats[i].message_id,
-            },
-            order: [['id', 'DESC']],
+            where: {  message_id: chats[i].message_id},
+            orderBy: { id: 'desc' }, 
           });
-        const timestamp = new Date("'"+lastMessage[0].createdAt+"'");
-        const time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });  
+
+          let time = "";
+          let message = ""; 
+  
+          if(lastMessage){
+            const timestamp = new Date("'"+lastMessage.created_at+"'");
+            time = timestamp.toLocaleTimeString([], { timeStyle: 'short' }); 
+            message = lastMessage.message.slice(0, 30);
+          }
+
+
+
+
         chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up" onclick="GetAllChats('`+chats[i].message_id+`')">
         <div class="d-flex align-items-center">
             <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="../images/avatar/avatar-1.png" alt="..."></a>
             <div>
               <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
-              <p class="mb-0">`+lastMessage[0].message.slice(0, 30)+` ...</p>
+              <p class="mb-0">`+message+` ...</p>
             </div>
         </div>
         <div class="text-end">
@@ -61,16 +77,15 @@ export const botChatsOnload = async (req: Request, res: Response, next: NextFunc
 export const botChatsGetMessages = async (req: Request, res: Response, next: NextFunction) => {
 const {message_id} = req.body
 
-prisma.botChats.updateMany({
+await prisma.botChats.updateMany({
   where: { message_id: message_id},
   data: { viewed_by_admin: 'yes'},
 });
-const chats  = await prisma.botChats.findMany({
-    where: {
-        "message_id" : message_id,
-    },
-    order: [['id', 'ASC']],
-  });
+const chats = await prisma.botChats.findMany({
+  where: {  message_id: message_id},
+  orderBy: { id: 'asc' }, 
+});
+
 var message_history = ''
 
 message_history += ` <div class="box">
@@ -88,11 +103,11 @@ message_history += ` <div class="box">
 <div class="box-body mb-30">
     <div class="chat-box-six" >`
     for (var i = 0; i < chats.length; i++) {
-        const timestamp = new Date("'"+chats[i].createdAt+"'");
-        const formattedDateTime = timestamp.toLocaleString();   
-        if(chats[i].message_sent_by == "customer"){
-            message_history += `<div class="rt-bx mb-30 d-flex align-items-start w-p100">
-            <div>
+      const timestamp = new Date("'"+chats[i].created_at+"'");
+      const formattedDateTime = timestamp.toLocaleString();   
+      if(chats[i].message_sent_by == "customer"){
+          message_history += `<div class="rt-bx mb-30 d-flex align-items-start w-p100">
+          <div>
                 <a class="ms-15  avatar avatar-lg" href="#"><img class="bg-danger-light rounded-circle" src="/images/avatar/avatar-1.png" alt="..."></a>
             </div>
             <div>
@@ -138,11 +153,16 @@ return res.json({status:"success", message:message_history})
 
 export const botChatsRefresh = async (req: Request, res: Response, next: NextFunction) => {
 
-    var chat = ''
-    const chats = await prisma.botChats.findMany({
-        attributes: ['message_id'],
-        group: ['message_id']
+  var chat = ''
+  const chats = await prisma.botChats.findMany({
+      distinct: ['message_id'],
+      orderBy: { id: 'desc' }, 
+      take: 20, 
+      select: {
+        message_id: true,
+      },
     });
+
     for (var i = 0; i < chats.length; i++) {
         const newMessageCount = await prisma.botChats.count({
             where: {
@@ -151,20 +171,26 @@ export const botChatsRefresh = async (req: Request, res: Response, next: NextFun
             },
 
           });
+
           const lastMessage = await prisma.botChats.findFirst({
-            where: {
-              message_id: chats[i].message_id,
-            },
-            order: [['id', 'DESC']],
-          });
-        const timestamp = new Date("'"+lastMessage[0].createdAt+"'");
-        const time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });  
+          where: {  message_id: chats[i].message_id},
+          orderBy: { id: 'desc' }, 
+        });
+        let time = "";
+        let message = "";
+
+        if(lastMessage){
+          const timestamp = new Date("'"+lastMessage.created_at+"'");
+          time = timestamp.toLocaleTimeString([], { timeStyle: 'short' }); 
+          message = lastMessage.message.slice(0, 30);
+        } 
+
         chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up" onclick="GetAllChats('`+chats[i].message_id+`')">
         <div class="d-flex align-items-center">
             <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="../images/avatar/avatar-1.png" alt="..."></a>
             <div>
               <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
-              <p class="mb-0">`+lastMessage[0].message.slice(0, 30)+` ...</p>
+              <p class="mb-0">`+message+` ...</p>
             </div>
         </div>
         <div class="text-end">
@@ -185,12 +211,10 @@ export const botChatsRefreshMessage = async (req: Request, res: Response, next: 
       data: { viewed_by_admin: 'yes'},
     });
     var message_history = ''
-    const chats  = await prisma.botChats.findMany({
-        where: {
-            "message_id" : message_id,
-        },
-        order: [['id', 'ASC']],
-      });
+    const chats = await prisma.botChats.findMany({
+      where: {  message_id: message_id},
+      orderBy: { id: 'asc' }, 
+  });
     var message_history = ''
     
     message_history += ` <div class="box">
@@ -208,7 +232,7 @@ export const botChatsRefreshMessage = async (req: Request, res: Response, next: 
     <div class="box-body mb-30">
         <div class="chat-box-six" >`
         for (var i = 0; i < chats.length; i++) {
-            const timestamp = new Date("'"+chats[i].createdAt+"'");
+          const timestamp = new Date("'"+chats[i].created_at+"'");
             const formattedDateTime = timestamp.toLocaleString();   
             if(chats[i].message_sent_by == "customer"){
                 message_history += `<div class="rt-bx mb-30 d-flex align-items-start w-p100">
