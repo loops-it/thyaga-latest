@@ -15,6 +15,7 @@ interface UserDecodedToken extends JwtPayload {
 
 export const LiveChatHistoryOnload = async (req: Request, res: Response, next: NextFunction) => {
     const {agent_id,profile_picture} = req.body
+    let agent_id_text = String(agent_id);
     var chat = ''
     const chats  = await prisma.chatHeader.findMany({
         where: {
@@ -27,16 +28,22 @@ export const LiveChatHistoryOnload = async (req: Request, res: Response, next: N
             where: {
               message_id: chats[i].message_id,
             },
-            order: [['id', 'DESC']],
-          });
-          const timestamp = new Date("'"+lastMessage[0].createdAt+"'");
-          const time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });  
+            orderBy: { id: 'desc' }  });
+
+            let time = "";
+        let message = "";
+
+        if(lastMessage){
+          const timestamp = new Date("'"+lastMessage.created_at+"'");
+          time = timestamp.toLocaleTimeString([], { timeStyle: 'short' }); 
+          message = lastMessage.message.slice(0, 30);
+        }
         chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up" onclick="GetLiveAllChats('`+chats[i].message_id+`')">
           <div class="d-flex align-items-center">
               <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="/uploads/`+profile_picture+`" alt="..."></a>
               <div>
                 <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
-                <p class="mb-0">`+lastMessage[0].message.slice(0, 30)+` ...</p>
+                <p class="mb-0">`+message.slice(0, 30)+` ...</p>
               </div>
           </div>
           <div class="text-end">
@@ -55,8 +62,7 @@ export const LiveChatHistoryMessages = async (req: Request, res: Response, next:
         where: {
           message_id: message_id
         },
-        order: [['id', 'ASC']]
-      });
+        orderBy: { id: 'asc' }  });
       chat += ` <div class="box">
       <div class="box-body px-20 py-10 bb-1 bbsr-0 bber-0">
         <div class="d-md-flex d-block justify-content-between align-items-center w-p100">
@@ -72,7 +78,7 @@ export const LiveChatHistoryMessages = async (req: Request, res: Response, next:
       <div class="box-body mb-30">
           <div class="chat-box-six">`
           for (var i = 0; i < chats.length; i++) {
-              const timestamp = new Date("'"+chats[i].createdAt+"'");
+              const timestamp = new Date("'"+chats[i].created_at+"'");
               const formattedDateTime = timestamp.toLocaleString();   
               if(chats[i].sent_by == "customer"){
                 chat += `<div class="rt-bx mb-30 d-flex align-items-start w-p100">
@@ -133,16 +139,24 @@ export const LiveChatHistoryRefresh = async (req: Request, res: Response, next: 
           where: {
             message_id: chats[i].message_id,
           },
-          order: [['id', 'DESC']],
-        });
-        const timestamp = new Date("'"+lastMessage[0].createdAt+"'");
-        const time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });  
+          orderBy: { id: 'desc' }  });
+
+          let time = "";
+      let message = "";
+
+       
+      if(lastMessage){
+        const timestamp = new Date("'"+lastMessage.created_at+"'");
+        time = timestamp.toLocaleTimeString([], { timeStyle: 'short' }); 
+        message = lastMessage.message.slice(0, 30);
+      }
+       
       chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up" onclick="GetLiveAllChats('`+chats[i].message_id+`')">
         <div class="d-flex align-items-center">
             <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="/uploads/`+profile_picture+`" alt="..."></a>
             <div>
               <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
-              <p class="mb-0">`+lastMessage[0].message.slice(0, 30)+` ...</p>
+              <p class="mb-0">`+message.slice(0, 30)+` ...</p>
             </div>
         </div>
         <div class="text-end">
@@ -162,8 +176,8 @@ export const LiveChatHistoryRefreshMessages = async (req: Request, res: Response
     where: {
       message_id: message_id
     },
-    order: [['id', 'ASC']]
-  });
+   orderBy: { id: 'asc' }  });
+
   chat += ` <div class="box">
   <div class="box-body px-20 py-10 bb-1 bbsr-0 bber-0">
     <div class="d-md-flex d-block justify-content-between align-items-center w-p100">
@@ -179,7 +193,7 @@ export const LiveChatHistoryRefreshMessages = async (req: Request, res: Response
   <div class="box-body mb-30">
       <div class="chat-box-six">`
       for (var i = 0; i < chats.length; i++) {
-          const timestamp = new Date("'"+chats[i].createdAt+"'");
+          const timestamp = new Date("'"+chats[i].created_at+"'");
           const formattedDateTime = timestamp.toLocaleString();   
           if(chats[i].sent_by == "customer"){
             chat += `<div class="rt-bx mb-30 d-flex align-items-start w-p100">

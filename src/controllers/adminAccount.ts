@@ -9,10 +9,8 @@ import User from '../../models/User';
 import Admin from '../../models/Admin';
 import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
- 
 
 interface UserDecodedToken extends JwtPayload {
   id: string;
@@ -31,6 +29,7 @@ export const adminAccountCreate = async (req: Request, res: Response, next: Func
         email : email,
         },
       });
+    if(email_exist){
     if(email_exist){
         return res.json({status:"failed", message:"Email has already registered"})
     }

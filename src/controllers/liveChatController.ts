@@ -147,7 +147,72 @@ catch (error) {
 }
 };
 
+// export const liveChat = async (req: Request, res: Response, next: NextFunction) => {
+//     const { chatId } = req.body
+//     try {
+//         const chat_header_result  = await prisma.chatHeader.findFirst({where: { message_id: chatId }  });
+        
+//         const chat_body_result = await prisma.liveChat.findFirst({
+//             where: { 
+//                 message_id: chatId,
+//                 sent_by: 'agent',
+//                 sent_to_user: 'no',
+//             },
+//             orderBy: { id: 'asc' },  
+//         });
+        
+//         if (chat_header_result) {
+//             let agent_name:any = null;
+//             let profile_picture;
+//             let agent_message;
+//             const agentDetails = await prisma.agent.findFirst({
+//                 where: {
+//                   user_id: chat_header_result.agent,
+//                 },
+//               });
+//             if (agent_details) {
+//                 agent_name = agent_details.name;
+//                 profile_picture = agent_details.profile_picture;
+//             }
+//             else {
+//                 agent_name = null;
+//                 profile_picture = null;
+//             }
+
+//             if (chat_body_result) {
+//                 agent_message = chat_body_result.message;
+//                 await prisma.liveChat.updateMany({
+//                     where: {  id: chat_body_result.id },
+//                     data: {  sent_to_user:"yes" },
+//                 });
+//             }
+//             else {
+//                 agent_message = null;
+//             }
+//             let agent_id = chat_header_result.agent;
+//             let chat_status = chat_header_result.status;
+//             let is_time_out = chat_header_result.is_time_out;
+//             res.json({ agent_id, chat_status, agent_message, agent_name, profile_picture, is_time_out });
+//         }
+//         else {
+//             let agent_id = null;
+//             let chat_status = null;
+//             let agent_message = null;
+//             let agent_name = null;
+//             let profile_picture = null;
+//             let is_time_out = null;
+
+//             res.json({ agent_id, chat_status, agent_message, agent_name, profile_picture, is_time_out });
+//         }
+//     }
+//     catch (error) {
+//         console.error("Error processing question:", error);
+//         res.status(500).json({ error: "An error occurred." });
+//     }
+// };
+
 export const liveChat = async (req: Request, res: Response, next: NextFunction) => {
+    const {chatId} = req.body
     const {chatId} = req.body
     try {
         
@@ -222,7 +287,6 @@ export const liveChat = async (req: Request, res: Response, next: NextFunction) 
         res.status(500).json({ error: "An error occurred." });
     }
     };
-
 
 export const liveChatUser = async (req: Request, res: Response, next: NextFunction) => {
     const { chatId, user_message, language } = req.body

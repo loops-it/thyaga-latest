@@ -8,6 +8,7 @@ import { Translate } from "@google-cloud/translate/build/src/v2";
 const speech = require("@google-cloud/speech");
 import multer from "multer";
 
+
 const upload = multer();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -46,6 +47,10 @@ const serviceAccountKey = {
 // console.log("serviceAccountKey: ", serviceAccountKey);
 
 const clientGoogle = new speech.SpeechClient({
+  credentials: serviceAccountKey,
+});
+
+const translate = new Translate({
   credentials: serviceAccountKey,
 });
 

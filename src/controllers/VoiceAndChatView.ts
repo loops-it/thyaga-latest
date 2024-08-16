@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 router.get('/voice-and-chat-bot', async (req: Request, res: Response) => {
-    const questions  = await prisma.quickQuestion.findAll({});
+    const questions  = await prisma.quickQuestion.findFirst({});
     res.render('intergratedBot',{questions: questions});
 });
 
