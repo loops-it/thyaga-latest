@@ -51,26 +51,52 @@ export const liveChatsOnload = async (req: Request, res: Response, next: NextFun
             time = timestamp.toLocaleTimeString([], { timeStyle: 'short' });
             message = lastMessage.message.slice(0, 30);
           }
-        for (var c = 0; c < languages.length; c++){
-            if(languages[c].language == chats[i].language){
-                chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up">
-                <div class="d-flex align-items-center">
-                    <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="../images/avatar/avatar-1.png" alt="..."></a>
-                    <div>
-                      <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
-                      <p class="mb-0">`+message+` ...</p>
-                      <button type="button" class="waves-effect waves-light btn btn-success mb-5 btn-sm" onclick="ReplayToLiveChat('`+chats[i].message_id+`')">REPLY</button>
-                    </div>
-                </div>
-                <div class="text-end">
-                  <span class="d-block mb-5 fs-12">`+time+`</span>`
-                if(newMessageCount > 0){
-                chat += `<span class="badge badge-primary">`+newMessageCount+`</span>`
-                } 
-                chat += `</div>
-            </div>`
+    //     for (var c = 0; c < languages.length; c++){
+    //         if(languages[c].language == chats[i].language){
+    //             chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up">
+    //             <div class="d-flex align-items-center">
+    //                 <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="../images/avatar/avatar-1.png" alt="..."></a>
+    //                 <div>
+    //                   <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
+    //                   <p class="mb-0">`+message+` ...</p>
+    //                   <button type="button" class="waves-effect waves-light btn btn-success mb-5 btn-sm" onclick="ReplayToLiveChat('`+chats[i].message_id+`')">REPLY</button>
+    //                 </div>
+    //             </div>
+    //             <div class="text-end">
+    //               <span class="d-block mb-5 fs-12">`+time+`</span>`
+    //             if(newMessageCount > 0){
+    //             chat += `<span class="badge badge-primary">`+newMessageCount+`</span>`
+    //             } 
+    //             chat += `</div>
+    //         </div>`
+    // }
+    // }
+    for (var c = 0; c < languages.length; c++) {
+      let botLanguage;
+      if (chats[i].language) {
+          botLanguage = chats[i].language;
+      }
+  
+      if (botLanguage && languages[c].language.toLowerCase() === botLanguage.toLowerCase()) {
+          chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up">
+              <div class="d-flex align-items-center">
+                  <a class="me-15 avatar avatar-lg" href="#"><img class="bg-primary-light" src="../images/avatar/avatar-1.png" alt="..."></a>
+                  <div>
+                      <a class="hover-primary mb-5" href="#"><strong>#` + chats[i].message_id + `</strong></a>
+                      <p class="mb-0">` + message + ` ...</p>
+                      <button type="button" class="waves-effect waves-light btn btn-success mb-5 btn-sm" onclick="ReplayToLiveChat('` + chats[i].message_id + `')">REPLY</button>
+                  </div>
+              </div>
+              <div class="text-end">
+                  <span class="d-block mb-5 fs-12">` + time + `</span>`;
+          if (newMessageCount > 0) {
+              chat += `<span class="badge badge-primary">` + newMessageCount + `</span>`;
+          }
+          chat += `</div>
+          </div>`;
+      }
+  }
     }
-    }}
     return res.json({status:"success", chats:chat, chatsCount:chats.length})
 };
 
@@ -114,26 +140,52 @@ export const refreshLiveChats = async (req: Request, res: Response, next: NextFu
           message = lastMessage.message.slice(0, 30);
         }
         
-      for (var c = 0; c < languages.length; c++){
-          if(languages[c].language == chats[i].language){
-              chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up">
-              <div class="d-flex align-items-center">
-                  <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="../images/avatar/avatar-1.png" alt="..."></a>
-                  <div>
-                    <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
-                    <p class="mb-0">`+message+` ...</p>
-                    <button type="button" class="waves-effect waves-light btn btn-success mb-5 btn-sm" onclick="ReplayToLiveChat('`+chats[i].message_id+`')">REPLY</button>
-                  </div>
-              </div>
-              <div class="text-end">
-                <span class="d-block mb-5 fs-12">`+time+`</span>`
-              if(newMessageCount > 0){
-              chat += `<span class="badge badge-primary">`+newMessageCount+`</span>`
-              } 
-              chat += `</div>
-          </div>`
-  }
-  }}
+  //     for (var c = 0; c < languages.length; c++){
+  //         if(languages[c].language == chats[i].language){
+  //             chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up">
+  //             <div class="d-flex align-items-center">
+  //                 <a class="me-15  avatar avatar-lg" href="#"><img class="bg-primary-light" src="../images/avatar/avatar-1.png" alt="..."></a>
+  //                 <div>
+  //                   <a class="hover-primary mb-5" href="#"><strong>#`+chats[i].message_id+`</strong></a>
+  //                   <p class="mb-0">`+message+` ...</p>
+  //                   <button type="button" class="waves-effect waves-light btn btn-success mb-5 btn-sm" onclick="ReplayToLiveChat('`+chats[i].message_id+`')">REPLY</button>
+  //                 </div>
+  //             </div>
+  //             <div class="text-end">
+  //               <span class="d-block mb-5 fs-12">`+time+`</span>`
+  //             if(newMessageCount > 0){
+  //             chat += `<span class="badge badge-primary">`+newMessageCount+`</span>`
+  //             } 
+  //             chat += `</div>
+  //         </div>`
+  // }
+  // }
+  for (var c = 0; c < languages.length; c++) {
+    let botLanguage;
+    if (chats[i].language) {
+        botLanguage = chats[i].language;
+    }
+
+    if (botLanguage && languages[c].language.toLowerCase() === botLanguage.toLowerCase()) {
+        chat += `<div class="p-20 bb-1 d-flex align-items-center justify-content-between pull-up">
+            <div class="d-flex align-items-center">
+                <a class="me-15 avatar avatar-lg" href="#"><img class="bg-primary-light" src="../images/avatar/avatar-1.png" alt="..."></a>
+                <div>
+                    <a class="hover-primary mb-5" href="#"><strong>#` + chats[i].message_id + `</strong></a>
+                    <p class="mb-0">` + message + ` ...</p>
+                    <button type="button" class="waves-effect waves-light btn btn-success mb-5 btn-sm" onclick="ReplayToLiveChat('` + chats[i].message_id + `')">REPLY</button>
+                </div>
+            </div>
+            <div class="text-end">
+                <span class="d-block mb-5 fs-12">` + time + `</span>`;
+        if (newMessageCount > 0) {
+            chat += `<span class="badge badge-primary">` + newMessageCount + `</span>`;
+        }
+        chat += `</div>
+        </div>`;
+    }
+}
+}
   return res.json({status:"success", chats:chat, chatsCount:chats.length})
 };
 

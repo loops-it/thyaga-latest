@@ -213,7 +213,6 @@ catch (error) {
 
 export const liveChat = async (req: Request, res: Response, next: NextFunction) => {
     const {chatId} = req.body
-    const {chatId} = req.body
     try {
         
         const chat_header_result  = await prisma.chatHeader.findFirst({where: { message_id: chatId }  });

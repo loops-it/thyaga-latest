@@ -56,9 +56,9 @@ export const customizeBot = async (req: Request, res: Response, next: Function) 
         //   res.send('No file uploaded.');
         // }
 
-        await prisma.customize.create({
+        await prisma.customizeBot.create({
           data: {
-            bot_Name: title,
+            title: title,
             color: color,
             select_image: "",  // Ensure this is an empty string or handle appropriately
           },

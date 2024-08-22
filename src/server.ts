@@ -483,11 +483,14 @@ app.get("/live-chats", agentLogged, async (req, res) => {
   });
   const languages = await prisma.agentLanguages.findMany({
     where: {
-      user_id: res.locals.agent_login_details.dataValues.id,
+      user_id: res.locals.agent_login_details.id,
     },
   });
   res.render("live-chats", { chats: chats, languages: languages });
 });
+
+
+
 
 app.post("/live-chats-onload", liveChatsOnload);
 app.post("/refresh-live-chats", refreshLiveChats);
