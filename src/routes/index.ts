@@ -1,21 +1,24 @@
 // routes/index.ts
 import express, { Request, Response } from 'express';
 import QuickQuestion from '../../models/QuickQuestion';
+import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
+const prisma = new PrismaClient();
+
 
 router.get('/', (req: Request, res: Response) => {
     res.render('index');
 });
 
 router.get('/bot', async (req: Request, res: Response) => {
-    const questions  = await QuickQuestion.findAll({});
-    res.render('bot',{questions: questions});
+    const questions = await prisma.quickQuestion.findMany();
+    res.render('bot', { questions });
 });
 
 router.get('/voice-bot', async (req: Request, res: Response) => {
-    const questions  = await QuickQuestion.findAll({});
-    res.render('audioBot',{questions: questions});
+    const questions = await prisma.quickQuestion.findMany();
+    res.render('audioBot', { questions });
 });
 
 router.get('/live-agent', (req: Request, res: Response) => {
@@ -23,8 +26,8 @@ router.get('/live-agent', (req: Request, res: Response) => {
 });
 
 router.get('/voice-and-chat-bot', async (req: Request, res: Response) => {
-    const questions  = await QuickQuestion.findAll({});
-    res.render('intergratedBot',{questions: questions});
+    const questions = await prisma.quickQuestion.findMany();
+    res.render('intergratedBot', { questions });
 });
 
 // router.get('/bot-customization', async (req: Request, res: Response) => {
@@ -32,8 +35,8 @@ router.get('/voice-and-chat-bot', async (req: Request, res: Response) => {
 // });
 
 router.get('/voice-call', async (req: Request, res: Response) => {
-    const questions  = await QuickQuestion.findAll({});
-    res.render('IntergratedBotCall',{questions: questions});
+    const questions = await prisma.quickQuestion.findMany();
+    res.render('IntergratedBotCall', { questions });
 });
 
 export default router;

@@ -8,6 +8,8 @@ import AgentLanguages from '../../models/AgentLanguages';
 import ChatTimer from '../../models/ChatTimer';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+
+
 interface UserDecodedToken extends JwtPayload {
   id: string;
   
@@ -17,18 +19,8 @@ export const liveChatsOnload = async (req: Request, res: Response, next: NextFun
 
     var chat = ''
     let agent_id = req.body.agent_id;
-    const chats  = await prisma.chatHeader.findMany({
-        where: {
-            "agent" : "unassigned",
-            "status" : "live",
-        },
-        orderBy: { id: 'desc' }  });
-
-    const languages  = await prisma.agentLanguages.findMany({
-        where: {
-            "user_id" : agent_id,
-        },
-    });
+    const chats  = await prisma.chatHeader.findMany({where: { agent: "unassigned", status: "live" }  });  
+    const languages  = await prisma.agentLanguages.findMany({where: { user_id: agent_id }  }); 
 
     for (var i = 0; i < chats.length; i++) {
         const newMessageCount = await prisma.liveChat.count({
