@@ -40,6 +40,26 @@
                   </div>
               </div>
           </div>
+          <div class="col-md-6">
+            <div class="box">
+                <div class="box-header with-border">
+                  <h4 class="box-title">Go Online/Offline</h4>
+                </div>
+                <div class="box-body">
+                    <% if(agent_login_details.online_status == "online") { %>
+                        Current Status : <span class="badge badge-pill badge-success">Online</span><br><br>
+                        <a href="/go-offline?id=<%= agent_login_details.id %>"><button type="button" class="waves-effect waves-light btn btn-danger mb-5  btn-sm">Go Offline</button></a>
+                    <% } else { %>
+                        Current Status : <span class="badge badge-pill badge-danger">Offline</span><br><br>
+                        <a href="/go-online?id=<%= agent_login_details.id %>"><button type="button" class="waves-effect waves-light btn btn-success mb-5 btn-sm">Go Online</button></a>
+                    <% } %>
+                   
+                </div>
+                <!-- /.box-body -->
+               
+                <!-- /.box-footer-->
+            </div>
+        </div>
       </section>
 
     
