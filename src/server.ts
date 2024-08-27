@@ -367,64 +367,50 @@ app.get("/add-agent", adminLogged, (req: Request, res: Response) => {
   });
 });
 app.post("/agent-add", agentCreateAccount);
-app.get("/manage-agents", adminLogged, async (req: Request, res: Response) => {
-  app.get(
-    "/deactivate-agent/:id",
-    adminLogged,
-    async (req: Request, res: Response) => {
-      let user_id =  parseInt(req.params.id, 10);;      await prisma.agent.updateMany({
+app.get('/manage-agents',adminLogged, async (req: Request, res: Response) => {
+  const agents = await prisma.agent.findMany({});
+  res.render('manage-agents', {agents: agents});
+});
+  app.get('/deactivate-agent/:id', adminLogged, async (req: Request, res: Response) => {
+    //let user_id: number | undefined = parseInt(req.query.id as string, 10);
+    let user_id =  parseInt(req.params.id, 10);;
+    await prisma.agent.updateMany({
         where: { user_id: user_id },
         data: { status: "inactive" },
       });
-      await prisma.user.updateMany({
+    await prisma.user.updateMany({
         where: { id: user_id },
         data: { status: "inactive" },
       });  
-      res.redirect("/manage-agents");
-    }
-  );
-  app.get(
-    "/activate-agent/:id",
-    adminLogged,
-    async (req: Request, res: Response) => {
-      let user_id =  parseInt(req.params.id, 10);;
-      await prisma.agent.updateMany({
-        where: { user_id: user_id },
-        data: { status: "active" },
-      });
-      await prisma.user.updateMany({
-        where: { id: user_id },
-        data: { status: "active" },
-      });
-      res.redirect("/manage-agents");
-    }
-  );
-  app.get("/edit-agent", adminLogged, async (req: Request, res: Response) => {
-    let user_id: number | undefined = parseInt(req.query.id as string, 10);
 
-    const agent_details = await prisma.agent.findFirst({
-      where: {
-        user_id: user_id,
-      },
+    res.redirect("/manage-agents");
+});
+app.get('/activate-agent/:id', adminLogged, async (req: Request, res: Response) => {
+  //let user_id: number | undefined = parseInt(req.query.id as string, 10);
+  let user_id =  parseInt(req.params.id, 10);;
+  await prisma.agent.updateMany({
+      where: { user_id: user_id },
+      data: { status: "active" },
     });
-    const login_details = await prisma.user.findFirst({
-      where: {
-        id: user_id,
-      },
-    });
-    const languages = await prisma.agentLanguages.findMany({
-      where: {
-        user_id: user_id,
-      },
-    });
-    res.render("edit-agent", {
-      agent_details: agent_details,
-      login_details: login_details,
-      languages: languages,
-    });
+  await prisma.user.updateMany({
+      where: { id: user_id },
+      data: { status: "active" },
+    });  
+
+  res.redirect("/manage-agents");
+});
+app.get('/edit-agent', adminLogged, async (req: Request, res: Response) => {
+  let user_id: number | undefined = parseInt(req.query.id as string, 10);
+
+  const agent_details = await prisma.agent.findFirst({
+    where: { user_id: user_id },
   });
-  const agents = await prisma.agent.findMany({});
-  res.render("manage-agents", { agents: agents });
+  const login_details = await prisma.user.findFirst({
+    where: { id: user_id },
+  });
+  const languages = await prisma.agentLanguages.findMany({where: {user_id : user_id,}});
+
+  res.render('edit-agent', {agent_details: agent_details,login_details: login_details,languages: languages});
 });
 
 app.post("/agent-update", agentUpdateAccount);
