@@ -434,6 +434,26 @@ app.get(
     });
   }
 );
+app.get('/go-offline',agentLogged, async (req: Request, res: Response) => {
+  let id: number | undefined = parseInt(req.query.id as string, 10);
+
+  await prisma.user.updateMany({
+    where: { id: id },
+    data: { online_status: "offline" },
+  });  
+
+  res.redirect('agent-dashboard');
+});
+
+app.get('/go-online',agentLogged, async (req: Request, res: Response) => {
+  let id: number | undefined = parseInt(req.query.id as string, 10);
+
+  await prisma.user.updateMany({
+    where: { id: id },
+    data: { online_status: "online" },
+  });  
+  res.redirect('agent-dashboard');
+});
 app.post("/quick-questions", quickQuestionsAdd);
 app.get(
   "/delete-question/:id",
