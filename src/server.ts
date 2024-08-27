@@ -88,7 +88,7 @@ import { chatTranscribeAudio } from "./controllers/TranscribeAudioIntergrated";
 const prisma = new PrismaClient();
 
 const app = express();
-app.use(cookieParser());
+app.use(cookieParser()); 
 // Set up view engine
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
