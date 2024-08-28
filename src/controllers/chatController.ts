@@ -289,7 +289,7 @@ Given a question and a list of categories, identify the appropriate category. Us
 3. If the question asks for merchants in a specific location (e.g., "merchants in Thyaga"), categorize it as "merchants".
 4. If the question asks for Thyaga merchants, who are the merchants, or any similar variations, categorize it as "merchants".
 5. For all other questions, provide only the exact matching category name from the list.
-6. If the question asks for information about Thyaga, categorize it as "about".
+6. If the question asks for information about Thyaga or customer service or vouchers , categorize it as "about".
 7. If there is no match, state "Unavailable".
 
 Do not add any additional text or punctuation.
