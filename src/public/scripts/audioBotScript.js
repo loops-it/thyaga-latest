@@ -124,7 +124,7 @@ function showEndChatAlertAgent() {
     );
     alertDiv.setAttribute("role", "alert");
     alertDiv.innerHTML = `
-              Are you sure yo want to colse this chat. Do you want to end the chat?
+              Are you sure you want to close this chat. Do you want to end the chat?
               <div class="d-flex flex-row">
                 <button type="button" class="btnYesToClose btn-end-chat closeRateAgent" onclick="handleEndChat()">Yes</button>
                 <button type="button" class="btnNotoClose ms-2" data-bs-dismiss="alert">Cancel</button>
@@ -154,7 +154,7 @@ function showEndChatAlertBot() {
     );
     alertDiv.setAttribute("role", "alert");
     alertDiv.innerHTML = `
-              Are you sure yo want to colse this chat. Do you want to end the chat?
+              Are you sure you want to close this chat. Do you want to end the chat?
               <div class="d-flex flex-row">
                 <button type="button" class="btnYesToClose abc btn-end-chat" onclick="handleEndChatBot()" >Yes</button>
                 <button type="button" class="btnNotoClose ms-2" data-bs-dismiss="alert">Cancel</button>
