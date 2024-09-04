@@ -48,8 +48,7 @@ export const viewDocuments = async (req: Request, res: Response) => {
             }));
             // console.log("vectors: ",vectors)
             res.render('viewVectors', { title: 'All Documents', vectors  });
-
-
+            
         } catch (error) {
             console.error("Error processing question:", error);
             res.status(500).json({ error: "An error occurred." });
